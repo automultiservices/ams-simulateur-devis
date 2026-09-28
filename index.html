@@ -91,19 +91,12 @@
   .brand-recap img{ height:32px; width:88px; object-fit:contain; }
   .brand-recap span{ font-weight:700; font-size:14px; }
 
-  .model-grid{ display:flex; flex-direction:column; gap:28px; }
-  .model-section-head{ display:flex; align-items:center; gap:12px; margin-bottom:12px; }
-  .model-section-head .model-cat{ margin:0; font-size:12.5px; color:var(--ink); }
-  .model-section-head .model-count{ font-size:12px; color:var(--grey-text); }
-  .model-section-head::after{ content:''; flex:1; height:1px; background:var(--grey-line); }
-  .model-section-head .size-pictogram{ height:22px; margin:0; gap:3px; }
-  .model-section-head .size-pictogram .bar{ width:9px; border-radius:2px 2px 0 0; }
-  .model-list{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:12px; }
-  .model-card{ display:flex; align-items:center; justify-content:space-between; gap:12px; background:#fff; border:1.5px solid var(--grey-line); border-radius:var(--radius); padding:18px 20px; cursor:pointer; transition:.2s; box-shadow:var(--shadow-sm); }
-  .model-card:hover{ border-color:var(--amber); box-shadow:var(--shadow-md); transform:translateY(-2px); }
-  .model-card .model-name{ font-size:17px; }
-  .model-card svg{ width:20px; height:20px; min-width:20px; color:var(--grey-text); transition:.2s; }
-  .model-card:hover svg{ color:var(--amber-dark); transform:translateX(3px); }
+  /* Une colonne par catégorie (petit / moyen / grand) : les modèles d'une même taille sont empilés. */
+  .model-grid{ display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:18px; align-items:start; }
+  @media (max-width:720px){ .model-grid{ grid-template-columns:1fr; } }
+  .model-col{ display:flex; flex-direction:column; gap:18px; }
+  .model-card{ background:#fff; border:1px solid var(--grey-line); border-radius:var(--radius); padding:24px; cursor:pointer; transition:.2s; text-align:center; box-shadow:var(--shadow-sm); }
+  .model-card:hover{ border-color:rgba(242,166,60,0.5); box-shadow:var(--shadow-md); transform:translateY(-2px); }
   .size-pictogram{ display:flex; align-items:flex-end; justify-content:center; gap:5px; height:34px; margin-bottom:16px; }
   .size-pictogram .bar{ background:var(--chrome-2); border-radius:4px 4px 0 0; width:17px; }
   .size-pictogram .bar.active{ background:linear-gradient(180deg, var(--amber), var(--amber-dark)); }
@@ -364,7 +357,7 @@
           <label class="contact-check"><input type="checkbox" id="cConsent"><span>J'accepte que mes données soient utilisées par Auto Multi Services pour traiter ma demande de devis, conformément à la politique de confidentialité.</span></label>
           <label class="contact-check"><input type="checkbox" id="cSignature" onchange="togglePickupBox()"><span>Je certifie l'exactitude des informations et du véhicule renseignés ci-contre et j'appose ma signature électronique — <b>obligatoire uniquement pour transmettre une commande ferme</b>.</span></label>
           <div class="pickup-box" id="pickupBox" hidden>
-            <div class="pickup-title">Quand AMS peut-elle venir chercher le véhicule ? <span class="req">*</span></div>
+            <div class="pickup-title">Quand AMS peut venir chercher le véhicule ? <span class="req">*</span></div>
             <p class="pickup-help">Date à partir de laquelle le véhicule est disponible pour qu'AMS vienne l'enlever et commence les travaux — <b>il ne s'agit pas de la date de livraison au client</b>.</p>
             <div class="pickup-row">
               <input id="cDispoDate" type="date">
@@ -1660,25 +1653,20 @@ function selectBrand(id){
 
 /* ---- étape 2 : modèles ---- */
 function sizeBars(cat){
-  const heights_ = {petit:[8,8,8], moyen:[8,14,8], grand:[8,14,20]};
+  const heights_ = {petit:[10,10,10], moyen:[10,18,10], grand:[10,18,26]};
   const active = {petit:0, moyen:1, grand:2}[cat];
   return heights_[cat].map((h,i)=>`<div class="bar${i===active?' active':''}" style="height:${h}px"></div>`).join('');
 }
 function renderModels(){
-  const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
   document.getElementById('modelGrid').innerHTML = ['petit','moyen','grand'].map(cat=>{
     const models = state.brand.models.filter(m=>m.cat===cat);
     if(!models.length) return '';
-    return `<section>
-      <div class="model-section-head">
-        <div class="size-pictogram">${sizeBars(cat)}</div>
-        <div class="model-cat">${catLabel[cat]}</div>
-        <div class="model-count">${models.length} modèle${models.length>1?'s':''}</div>
-      </div>
-      <div class="model-list">${models.map(m=>`
-        <div class="model-card" onclick="selectModel('${m.id}')"><div class="model-name">${m.name}</div>${arrow}</div>`).join('')}
-      </div>
-    </section>`;
+    return `<div class="model-col">${models.map(m=>`
+      <div class="model-card" onclick="selectModel('${m.id}')">
+        <div class="size-pictogram">${sizeBars(m.cat)}</div>
+        <div class="model-cat">${catLabel[m.cat]}</div>
+        <div class="model-name">${m.name}</div>
+      </div>`).join('')}</div>`;
   }).join('');
 }
 function selectModel(id){
