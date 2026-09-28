@@ -91,9 +91,19 @@
   .brand-recap img{ height:32px; width:88px; object-fit:contain; }
   .brand-recap span{ font-weight:700; font-size:14px; }
 
-  .model-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px,1fr)); gap:18px; }
-  .model-card{ background:#fff; border:1px solid var(--grey-line); border-radius:var(--radius); padding:24px; cursor:pointer; transition:.2s; text-align:center; box-shadow:var(--shadow-sm); }
-  .model-card:hover{ border-color:rgba(242,166,60,0.5); box-shadow:var(--shadow-md); transform:translateY(-2px); }
+  .model-grid{ display:flex; flex-direction:column; gap:28px; }
+  .model-section-head{ display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .model-section-head .model-cat{ margin:0; font-size:12.5px; color:var(--ink); }
+  .model-section-head .model-count{ font-size:12px; color:var(--grey-text); }
+  .model-section-head::after{ content:''; flex:1; height:1px; background:var(--grey-line); }
+  .model-section-head .size-pictogram{ height:22px; margin:0; gap:3px; }
+  .model-section-head .size-pictogram .bar{ width:9px; border-radius:2px 2px 0 0; }
+  .model-list{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:12px; }
+  .model-card{ display:flex; align-items:center; justify-content:space-between; gap:12px; background:#fff; border:1.5px solid var(--grey-line); border-radius:var(--radius); padding:18px 20px; cursor:pointer; transition:.2s; box-shadow:var(--shadow-sm); }
+  .model-card:hover{ border-color:var(--amber); box-shadow:var(--shadow-md); transform:translateY(-2px); }
+  .model-card .model-name{ font-size:17px; }
+  .model-card svg{ width:20px; height:20px; min-width:20px; color:var(--grey-text); transition:.2s; }
+  .model-card:hover svg{ color:var(--amber-dark); transform:translateX(3px); }
   .size-pictogram{ display:flex; align-items:flex-end; justify-content:center; gap:5px; height:34px; margin-bottom:16px; }
   .size-pictogram .bar{ background:var(--chrome-2); border-radius:4px 4px 0 0; width:17px; }
   .size-pictogram .bar.active{ background:linear-gradient(180deg, var(--amber), var(--amber-dark)); }
@@ -198,6 +208,13 @@
   .no-options-check input[type=checkbox]{ width:22px; height:22px; min-width:22px; cursor:pointer; accent-color:var(--amber); }
   .contact-check input[type=checkbox]{ width:19px; height:19px; min-width:19px; margin-top:1px; cursor:pointer; accent-color:var(--amber); }
   .req{ color:var(--red); font-weight:700; }
+  .pickup-box{ margin-top:14px; padding:16px 18px; background:#FFF8EC; border:1.5px solid var(--amber); border-radius:10px; }
+  .pickup-box[hidden]{ display:none; }
+  .pickup-title{ font-size:14px; font-weight:700; color:var(--ink); }
+  .pickup-help{ font-size:12.5px; color:var(--grey-text); line-height:1.5; margin:4px 0 12px; }
+  .pickup-row{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 20px; }
+  .pickup-row input[type=date]{ padding:10px 12px; border:1.5px solid var(--grey-line); border-radius:9px; font-size:14.5px; background:#fff; }
+  .pickup-row input[type=date]:focus{ outline:none; border-color:var(--amber); box-shadow:0 0 0 3px rgba(242,166,60,0.15); }
 
   #print-area{ display:none; }
   @media print{
@@ -341,13 +358,19 @@
             <div class="contact-field full"><label>Société <span class="req">*</span></label><input id="cSociete" type="text"></div>
             <div class="contact-field full"><label>Contremarque — client final <span class="req">*</span></label><input id="cContremarque" type="text" placeholder="Nom du client final"></div>
             <label class="contact-check" style="grid-column:1/-1; margin-top:0;"><input type="checkbox" id="cStock" onchange="toggleStock()"><span>Pas de client final</span></label>
-            <div class="contact-field full" id="cDispoDateWrap"><label>Date de disponibilité du véhicule</label><input id="cDispoDate" type="date" style="max-width:220px;"></div>
-            <label class="contact-check" style="grid-column:1/-1; margin-top:0;"><input type="checkbox" id="cDispoNow" onchange="toggleDispoNow()"><span>Véhicule déjà disponible</span></label>
             <div class="contact-field"><label>Email <span class="req">*</span></label><input id="cEmail" type="email"></div>
             <div class="contact-field"><label>Téléphone</label><input id="cTel" type="tel"></div>
           </div>
           <label class="contact-check"><input type="checkbox" id="cConsent"><span>J'accepte que mes données soient utilisées par Auto Multi Services pour traiter ma demande de devis, conformément à la politique de confidentialité.</span></label>
-          <label class="contact-check"><input type="checkbox" id="cSignature"><span>Je certifie l'exactitude des informations et du véhicule renseignés ci-contre et j'appose ma signature électronique — <b>obligatoire uniquement pour transmettre une commande ferme</b>.</span></label>
+          <label class="contact-check"><input type="checkbox" id="cSignature" onchange="togglePickupBox()"><span>Je certifie l'exactitude des informations et du véhicule renseignés ci-contre et j'appose ma signature électronique — <b>obligatoire uniquement pour transmettre une commande ferme</b>.</span></label>
+          <div class="pickup-box" id="pickupBox" hidden>
+            <div class="pickup-title">Quand AMS peut-elle venir chercher le véhicule ? <span class="req">*</span></div>
+            <p class="pickup-help">Date à partir de laquelle le véhicule est disponible pour qu'AMS vienne l'enlever et commence les travaux — <b>il ne s'agit pas de la date de livraison au client</b>.</p>
+            <div class="pickup-row">
+              <input id="cDispoDate" type="date">
+              <label class="contact-check" style="margin-top:0;"><input type="checkbox" id="cDispoNow" onchange="toggleDispoNow()"><span>Déjà disponible, AMS peut venir dès maintenant</span></label>
+            </div>
+          </div>
           <div class="cta-row" style="flex-wrap:wrap; gap:12px;">
             <button class="btn-secondary" id="devisBtn" onclick="generateQuote('devis')">Générer le devis (sans engagement)</button>
             <button class="btn-primary" id="commandeBtn" onclick="generateQuote('commande')">Signer &amp; transmettre la commande
@@ -1637,17 +1660,26 @@ function selectBrand(id){
 
 /* ---- étape 2 : modèles ---- */
 function sizeBars(cat){
-  const heights_ = {petit:[10,10,10], moyen:[10,18,10], grand:[10,18,26]};
+  const heights_ = {petit:[8,8,8], moyen:[8,14,8], grand:[8,14,20]};
   const active = {petit:0, moyen:1, grand:2}[cat];
   return heights_[cat].map((h,i)=>`<div class="bar${i===active?' active':''}" style="height:${h}px"></div>`).join('');
 }
 function renderModels(){
-  document.getElementById('modelGrid').innerHTML = state.brand.models.map(m=>`
-    <div class="model-card" onclick="selectModel('${m.id}')">
-      <div class="size-pictogram">${sizeBars(m.cat)}</div>
-      <div class="model-cat">${catLabel[m.cat]}</div>
-      <div class="model-name">${m.name}</div>
-    </div>`).join('');
+  const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  document.getElementById('modelGrid').innerHTML = ['petit','moyen','grand'].map(cat=>{
+    const models = state.brand.models.filter(m=>m.cat===cat);
+    if(!models.length) return '';
+    return `<section>
+      <div class="model-section-head">
+        <div class="size-pictogram">${sizeBars(cat)}</div>
+        <div class="model-cat">${catLabel[cat]}</div>
+        <div class="model-count">${models.length} modèle${models.length>1?'s':''}</div>
+      </div>
+      <div class="model-list">${models.map(m=>`
+        <div class="model-card" onclick="selectModel('${m.id}')"><div class="model-name">${m.name}</div>${arrow}</div>`).join('')}
+      </div>
+    </section>`;
+  }).join('');
 }
 function selectModel(id){
   state.model = state.brand.models.find(m=>m.id===id);
@@ -1957,6 +1989,9 @@ function toggleStock(){
   else { inp.value = inp.dataset.prev || ''; }
   inp.style.opacity = stock ? '.5' : '1';
 }
+function togglePickupBox(){
+  document.getElementById('pickupBox').hidden = !document.getElementById('cSignature').checked;
+}
 function toggleDispoNow(){
   const now = document.getElementById('cDispoNow').checked;
   const inp = document.getElementById('cDispoDate');
@@ -1977,7 +2012,7 @@ function generateQuote(mode){
   const signed = document.getElementById('cSignature').checked;
   const dispoNow = document.getElementById('cDispoNow').checked;
   const dispoDateVal = document.getElementById('cDispoDate').value;
-  const disponibilite = dispoNow ? 'Véhicule déjà disponible' : (dispoDateVal ? new Date(dispoDateVal).toLocaleDateString('fr-FR') : '');
+  const disponibilite = (mode !== 'commande') ? '' : (dispoNow ? 'dès maintenant' : (dispoDateVal ? new Date(dispoDateVal + 'T12:00').toLocaleDateString('fr-FR') : ''));
   if(!nom || !societe || !email || !consent){
     alert("Merci de renseigner votre nom, votre société, votre email, et d'accepter l'utilisation de vos données.");
     return;
@@ -1988,6 +2023,11 @@ function generateQuote(mode){
   }
   if(mode === 'commande' && !signed){
     alert("Pour transmettre une commande ferme, cochez la case de certification et de signature électronique.");
+    return;
+  }
+  if(mode === 'commande' && !disponibilite){
+    alert("Indiquez à partir de quand AMS peut venir chercher le véhicule pour commencer les travaux (ou cochez « Déjà disponible »).");
+    document.getElementById('cDispoDate').focus();
     return;
   }
   let lines = [], total = 0;
@@ -2059,7 +2099,7 @@ function renderPrintArea(){
         <div style="font-size:12.5px; color:#667080; margin-top:4px;">N° ${q.quoteNum}</div>
         <div style="font-size:12.5px; color:#667080;">Date : ${q.date}</div>
         ${q.contremarque ? `<div style="font-size:12.5px; color:#667080;">Contremarque : ${q.contremarque}</div>` : ''}
-        ${q.disponibilite ? `<div style="font-size:12.5px; color:#667080;">Disponibilité véhicule : ${q.disponibilite}</div>` : ''}
+        ${q.disponibilite ? `<div style="font-size:12.5px; color:#667080;">Enlèvement par AMS possible : ${q.disponibilite}</div>` : ''}
       </div>
     </div>
 
