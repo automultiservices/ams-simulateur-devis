@@ -370,14 +370,6 @@
       <div class="page-head"><h1>Vos coordonnées</h1><p>Vérifiez le récapitulatif ci-contre, puis générez le devis ou transmettez la commande.</p></div>
       <div class="contact-layout">
         <div class="contact-panel">
-          <div class="pricemode-box" id="priceModeBox">
-            <div class="pricemode-title">Ce devis est destiné à : <span class="req">*</span></div>
-            <div class="pricemode-opts">
-              <button type="button" class="pricemode-opt" data-pm="client" onclick="setPriceMode('client')"><b>👤 Client final</b><span>Prix publics HT</span></button>
-              <button type="button" class="pricemode-opt" data-pm="concession" onclick="setPriceMode('concession')"><b>🏢 Concession</b><span id="pmConcessLabel">Prix nets remisés</span></button>
-            </div>
-            <div class="pricemode-help" id="pmHelp">Choisissez le type de devis avant de le générer.</div>
-          </div>
           <div class="contact-grid">
             <div class="contact-field"><label>Nom <span class="req">*</span></label><input id="cNom" type="text"></div>
             <div class="contact-field"><label>Prénom</label><input id="cPrenom" type="text"></div>
@@ -396,6 +388,14 @@
               <input id="cDispoDate" type="date">
               <label class="contact-check" style="margin-top:0;"><input type="checkbox" id="cDispoNow" onchange="toggleDispoNow()"><span>Déjà disponible, AMS peut venir dès maintenant</span></label>
             </div>
+          </div>
+          <div class="pricemode-box" style="margin:18px 0 0;" id="priceModeBox">
+            <div class="pricemode-title">Version du devis <span class="req">*</span></div>
+            <div class="pricemode-opts">
+              <button type="button" class="pricemode-opt" data-pm="client" onclick="setPriceMode('client')"><b>Version client</b><span>Prix publics</span></button>
+              <button type="button" class="pricemode-opt" data-pm="concession" onclick="setPriceMode('concession')"><b>Version concession</b><span id="pmConcessLabel">Prix nets</span></button>
+            </div>
+            <div class="pricemode-help" id="pmHelp">Choisissez le type de devis avant de le générer.</div>
           </div>
           <div class="cta-row" style="flex-wrap:wrap; gap:12px;">
             <button class="btn-secondary" id="devisBtn" onclick="generateQuote('devis')">Générer le devis (sans engagement)</button>
@@ -1693,8 +1693,8 @@ const brands = [
 ========================================================================= */
 /* Remise concession par défaut (%) — modifiable par concessionnaire dans l'admin. */
 const DEFAULT_REMISE = 10;
-/* L'annexe UTAC (frais administratifs) n'est pas remisée. Passer à true pour la remiser aussi. */
-const REMISE_ON_UTAC = false;
+/* L'annexe UTAC est remisée comme les prestations. Passer à false pour l'exclure. */
+const REMISE_ON_UTAC = true;
 /* Photos des prestations : dossier img/prestations/ du dépôt GitHub (WebP). */
 function photoUrl(name, mini){ return 'img/prestations/' + encodeURIComponent(name) + (mini ? '-mini' : '') + '.webp'; }
 const _photoPreloaded = {};
@@ -2175,7 +2175,7 @@ function renderContactRecap(){
   const sub = dimsSummaryText();
   document.getElementById('cRecapSub').textContent = catLabel[state.model.cat] + (sub ? ' — ' + sub : '');
   const q = computeQuoteLines();
-  const isC = state.priceMode === 'concession';
+  const isC = false; // l'écran affiche toujours les prix publics (le client peut voir l'écran) ; le détail net n'est que sur le PDF
   document.getElementById('cRecapLines').innerHTML = q.lines.length
     ? q.lines.map(it=>`<div class="summary-line"><span>${it.name}</span><span>${isC && it.remise ? `<span class="old">${fmtEur(it.price)}</span>` : ''}${fmtEur(isC ? it.net : it.price)}</span></div>`).join('')
       + (isC ? `<div class="summary-line" style="color:#8A5A0F;"><span>Remise concession ${fmtPct(q.remisePct)}</span><span style="color:#8A5A0F;">− ${fmtEur(q.remiseTotal)}</span></div>` : '')
@@ -2214,12 +2214,11 @@ function renderPriceModeUI(){
   const box = document.getElementById('priceModeBox');
   if(!box) return;
   box.classList.remove('missing');
-  document.getElementById('pmConcessLabel').textContent = 'Prix nets, remise ' + fmtPct(concessRemise()) + ' détaillée par ligne';
   box.querySelectorAll('.pricemode-opt').forEach(b=>b.classList.toggle('selected', b.dataset.pm === state.priceMode));
   const help = document.getElementById('pmHelp');
   help.textContent = !state.priceMode ? 'Choisissez le type de devis avant de le générer.'
-    : state.priceMode === 'concession' ? 'Devis interne concession : ne pas remettre au client final.'
-    : 'Devis à remettre au client final : prix publics, aucune remise affichée.';
+    : state.priceMode === 'concession' ? 'Version concession : le détail des prix nets figure uniquement sur le PDF.'
+    : 'Version client : prix publics.';
 }
 
 /* ---- étape 6 : génération + envoi du devis ---- */
@@ -2268,7 +2267,7 @@ function generateQuote(mode){
     const box = document.getElementById('priceModeBox');
     box.classList.remove('missing'); void box.offsetWidth; box.classList.add('missing');
     box.scrollIntoView({behavior:'smooth', block:'center'});
-    alert("Indiquez si ce devis est destiné au client final ou à la concession.");
+    alert("Choisissez la version du devis : client ou concession.");
     return;
   }
   if(mode === 'commande' && !signed){
