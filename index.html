@@ -102,6 +102,40 @@
   .size-pictogram .bar.active{ background:linear-gradient(180deg, var(--amber), var(--amber-dark)); }
   .model-cat{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--grey-text); margin-bottom:6px;}
   .model-name{ font-weight:800; font-size:19px; }
+  .vt-grid{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:20px; margin-top:8px; }
+  @media (max-width:760px){ .vt-grid{ grid-template-columns:1fr; } }
+  .vt-card{ position:relative; display:flex; align-items:center; gap:22px; background:#fff; border:1.5px solid var(--grey-line); border-radius:20px; padding:28px 26px; cursor:pointer; transition:.22s; box-shadow:var(--shadow-sm); overflow:hidden; }
+  .vt-card::after{ content:''; position:absolute; left:0; top:0; bottom:0; width:5px; background:linear-gradient(180deg, var(--amber), var(--amber-dark)); opacity:0; transition:.22s; }
+  .vt-card:hover{ border-color:rgba(242,166,60,0.65); box-shadow:var(--shadow-md); transform:translateY(-3px); }
+  .vt-card:hover::after{ opacity:1; }
+  .vt-ico{ flex:0 0 84px; height:84px; border-radius:20px; background:linear-gradient(145deg, #FFF6E8, #FDE7C6); color:var(--amber-dark); display:flex; align-items:center; justify-content:center; }
+  .vt-ico svg{ width:58px; height:30px; }
+  .vt-body{ flex:1; min-width:0; }
+  .vt-kicker{ font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--amber-dark); margin-bottom:4px; }
+  .vt-title{ font-size:22px; font-weight:800; color:var(--ink); line-height:1.2; }
+  .vt-desc{ font-size:13.5px; color:var(--grey-text); margin-top:8px; line-height:1.45; }
+  .vt-go{ flex:0 0 40px; height:40px; border-radius:50%; background:var(--grey-bg); color:var(--ink); display:flex; align-items:center; justify-content:center; transition:.22s; }
+  .vt-go svg{ width:18px; height:18px; }
+  .vt-card:hover .vt-go{ background:var(--amber); color:#fff; transform:translateX(3px); }
+  .vt-switch{ display:inline-flex; background:#fff; border:1px solid var(--grey-line); border-radius:999px; padding:4px; margin:0 0 20px; box-shadow:var(--shadow-sm); }
+  .vt-switch button{ border:none; background:none; padding:9px 18px; border-radius:999px; font:inherit; font-size:13.5px; font-weight:700; color:var(--grey-text); cursor:pointer; transition:.18s; }
+  .vt-switch button.on{ background:var(--ink); color:#fff; }
+  .vt-switch button:not(.on):hover{ color:var(--ink); }
+  .vp-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(270px,1fr)); gap:14px; }
+  .vp-card{ display:flex; align-items:center; gap:16px; background:#fff; border:1.5px solid var(--grey-line); border-radius:16px; padding:14px 18px; cursor:pointer; transition:.2s; box-shadow:var(--shadow-sm); }
+  .vp-card:hover{ border-color:rgba(242,166,60,0.65); box-shadow:var(--shadow-md); transform:translateY(-2px); }
+  .vp-ico{ flex:0 0 56px; height:56px; border-radius:14px; background:#FFF4E2; color:var(--amber-dark); display:flex; align-items:center; justify-content:center; transition:.2s; }
+  .vp-ico svg{ width:38px; height:20px; }
+  .vp-card:hover .vp-ico{ background:var(--amber); color:#fff; }
+  .vp-body{ flex:1; min-width:0; }
+  .vp-name{ font-size:18px; font-weight:800; color:var(--ink); line-height:1.25; }
+  .vp-tags{ display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+  .vp-tag{ font-size:11px; font-weight:600; color:#4E5664; background:var(--grey-bg); border-radius:999px; padding:3px 9px; white-space:nowrap; }
+  .vp-from{ font-size:12px; color:var(--grey-text); margin-top:8px; }
+  .vp-from b{ color:var(--ink); font-weight:800; }
+  .vp-chev{ flex:0 0 auto; color:#B9BFC8; transition:.2s; }
+  .vp-chev svg{ width:18px; height:18px; display:block; }
+  .vp-card:hover .vp-chev{ color:var(--amber-dark); transform:translateX(3px); }
 
   .config-panel{ background:#fff; border:1px solid var(--grey-line); border-radius:var(--radius); padding:30px; box-shadow:var(--shadow-md); }
   .config-panel-head{ display:flex; align-items:center; gap:14px; margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--grey-line); }
@@ -314,6 +348,7 @@
       <button class="back-link" onclick="goTo('marque')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Changer de marque</button>
       <div class="page-head"><h1>Quel est votre modèle ?</h1></div>
       <div class="brand-recap" id="brandRecap"></div>
+      <div id="vehTypeBar"></div>
       <div class="model-grid" id="modelGrid"></div>
     </div>
 
@@ -1691,6 +1726,80 @@ const brands = [
    PRESTATIONS — vraies grilles de prix Partner / Expert / Boxer
    (relevées dans les fiches tarifs AMS Chartres 2025, prix HT pose incluse)
 ========================================================================= */
+/* =========================================================================
+   VOITURES DE SOCIÉTÉ — transformation VP-VU (kits Gruau, tarif 2026)
+   vp:[prix sans tablette, prix avec tablette cache-bagages, grille de séparation | null]
+   Prix client final HT arrondis à l'euro (la remise concession s'applique comme ailleurs).
+   Source : Transfo_VP-VU_a_valider.xlsx (validé le 16/10/2026).
+========================================================================= */
+const VP_MODELS = {
+  renault:[
+    {id:'vp-clio-vi', name:"Clio VI", note:"Hybride, Avec ou sans roue de secours", vp:[927,1200,null]},
+    {id:'vp-r5-e-tech', name:"R5 E-Tech", note:"Électrique", vp:[927,1200,587]},
+    {id:'vp-r4-e-tech', name:"R4 E-Tech", note:"Électrique", vp:[927,1200,null]},
+    {id:'vp-captur-ii', name:"Captur II", note:"Thermique, HEV, PHEV", vp:[1046,1339,null]},
+    {id:'vp-megane-e-tech', name:"Mégane E-Tech", note:"Électrique", vp:[1040,1334,null]},
+    {id:'vp-symbioz', name:"Symbioz", note:"", vp:[1066,1355,null]},
+    {id:'vp-arkana-e-tech', name:"Arkana E-Tech", note:"", vp:[1210,1638,null]},
+    {id:'vp-austral', name:"Austral", note:"MHEV, HEV, Sans roue de secours", vp:[1210,1638,null]}],
+  peugeot:[
+    {id:'vp-208-e-208', name:"208 / e-208", note:"Compatible MHEV", vp:[927,1200,587]},
+    {id:'vp-308-e-308', name:"308 / e-308", note:"MHEV, PHEV, Électrique", vp:[1040,1334,587]},
+    {id:'vp-308-sw', name:"308 SW", note:"MHEV, PHEV, Électrique", vp:[1164,1488,587]},
+    {id:'vp-2008-e-2008', name:"2008 / e-2008", note:"Compatible MHEV", vp:[1046,1339,587]},
+    {id:'vp-3008-e-3008', name:"3008 / e-3008", note:"Non compatible PHEV", vp:[1210,1638,null]}],
+  citroen:[
+    {id:'vp-c3-e-c3-iv', name:"C3 / ë-C3", note:"Génération IV", vp:[927,1200,587]},
+    {id:'vp-c4-e-c4', name:"C4 / ë-C4", note:"Compatible MHEV", vp:[1040,1334,587]},
+    {id:'vp-c3-aircross-2025', name:"C3 Aircross", note:"Modèle 2025, Hors 7 places", vp:[1015,1298,587]},
+    {id:'vp-c5-aircross-2026', name:"C5 Aircross", note:"Modèle 2026, Compatible MHEV", vp:[1210,1638,null]}],
+  ds:[
+    {id:'vp-ds-4', name:"DS 4", note:"MHEV, E-Tense", vp:[1040,1334,null]},
+    {id:'vp-ds-7', name:"DS 7", note:"Non compatible PHEV", vp:[1277,1751,null]}],
+  opel:[
+    {id:'vp-corsa-corsa-e', name:"Corsa / Corsa-e", note:"Compatible MHEV", vp:[927,1200,587]},
+    {id:'vp-astra', name:"Astra", note:"Thermique, MHEV, PHEV", vp:[1040,1334,587]},
+    {id:'vp-mokka-mokka-e', name:"Mokka / Mokka-e", note:"Compatible MHEV", vp:[1071,1427,null]},
+    {id:'vp-grandland', name:"Grandland", note:"Hybride", vp:[1174,1591,null]}],
+  ford:[
+    {id:'vp-puma', name:"Puma", note:"HEV, Puma Gen-E", vp:[1066,1385,null]},
+    {id:'vp-kuga-iii', name:"Kuga III", note:"HEV, PHEV, Sans roue de secours", vp:[1200,1519,null]}],
+};
+/* DS : pas d'utilitaire au catalogue, logo texte. */
+function textLogo(){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 120"><text x="150" y="70" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="54" font-weight="700" letter-spacing="6" fill="#16181B">DS</text><text x="150" y="96" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="14" font-weight="700" letter-spacing="6" fill="#667080">AUTOMOBILES</text></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+if(!brands.some(x=>x.id==='ds')) brands.push({id:'ds', name:'DS', logo:textLogo(), models:[]});
+brands.forEach(b=>(VP_MODELS[b.id]||[]).forEach(m=>b.models.push(Object.assign({cat:'vp', dimType:'none', options:{}}, m))));
+catLabel.vp = 'Véhicule de société';
+
+/* Prestations proposées sur une voiture de société : transformation (avec/sans tablette),
+   grille de séparation si elle existe, + kit balisage et gyrophare au prix « Expert »
+   (repris des prestations utilitaires, donc à jour des prix admin / agence). */
+const VP_ACCESSORIES = ['Kit balisage classe B AV/ARR/LAT', 'Gyroled avec interrupteur'];
+let vpServices = [];
+function buildVpServices(model){
+  const [sans, avec, grille] = model.vp.map(v=>v==null ? null : Math.round(v));
+  const transfo = [
+    { name:'Transformation VP-VU', note:'Kit Gruau — passage en 2 places, sans tablette cache-bagages', group:'vpvu', fixedPrice:sans },
+    { name:'Transformation VP-VU + tablette cache-bagages', note:'Kit Gruau — passage en 2 places, avec tablette cache-bagages', group:'vpvu', fixedPrice:avec },
+  ];
+  if(grille != null) transfo.push({ name:'Grille de séparation', note:'En complément de la transformation', fixedPrice:grille });
+  const acc = [];
+  VP_ACCESSORIES.forEach(n=>{
+    let src = null;
+    services.forEach(c=>c.items.forEach(it=>{ if(!src && it.name === n) src = it; }));
+    if(!src || !src.price) return;
+    const p = Array.isArray(src.price.expert) ? src.price.expert[0] : src.price.expert;
+    if(p == null) return;
+    acc.push({ name:src.name, note:src.note || null, photo:src.photo, fixedPrice:Math.round(p) });
+  });
+  vpServices = [{ cat:'Transformation VP-VU', icon:'⇄', items:transfo }];
+  if(acc.length) vpServices.push({ cat:'Accessoires', icon:'✚', items:acc });
+}
+function activeServices(){ return (state.model && state.model.cat === 'vp') ? vpServices : services; }
+
 /* Remise concession par défaut (%) — modifiable par concessionnaire dans l'admin. */
 const DEFAULT_REMISE = 10;
 /* L'annexe UTAC est remisée comme les prestations. Passer à false pour l'exclure. */
@@ -1778,6 +1887,7 @@ function meubleDroitTwin(item){
   return dCat.items[gCat.items.indexOf(item)] || null;
 }
 function priceFor(item){
+  if(item.fixedPrice != null) return item.fixedPrice;
   if(item.group === 'meuble-gauche' && meubleGaucheAlignee()){
     const twin = meubleDroitTwin(item);
     if(twin) return priceFor(twin);
@@ -1855,7 +1965,7 @@ function renderBrands(){
 }
 function selectBrand(id){
   state.brand = brands.find(b=>b.id===id);
-  state.model = null; state.dims = {}; state.selected = {}; state.noOptions = false; state.priceMode = null;
+  state.model = null; state.vehType = null; state.dims = {}; state.selected = {}; state.noOptions = false; state.priceMode = null;
   const noOptionsBox0 = document.getElementById('noOptions'); if(noOptionsBox0) noOptionsBox0.checked = false;
   document.getElementById('brandRecap').innerHTML = `<img src="${state.brand.logo}" alt=""><span>${state.brand.name}</span>`;
   renderModels();
@@ -1868,8 +1978,56 @@ function sizeBars(cat){
   const active = {petit:0, moyen:1, grand:2}[cat];
   return heights_[cat].map((h,i)=>`<div class="bar${i===active?' active':''}" style="height:${h}px"></div>`).join('');
 }
+const ICON_VAN = '<svg viewBox="0 0 64 34" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><path d="M3 26V6.5A2.5 2.5 0 0 1 5.5 4H40l11 10.5 8.5 2.5c1 .3 1.5 1.1 1.5 2V26"/><path d="M40 4v10.5h11"/><path d="M3 26h7M22 26h20M54 26h7"/><circle cx="16" cy="26" r="5"/><circle cx="48" cy="26" r="5"/></svg>';
+const ICON_CAR = '<svg viewBox="0 0 64 34" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"><path d="M3 26v-6c0-1.2.8-2.2 2-2.5l8-2L21 8a5 5 0 0 1 3.4-1.4h13.2c1.3 0 2.6.5 3.5 1.4l7.4 7.4 8.6 1.8c1.6.3 2.9 1.7 2.9 3.4V26"/><path d="M3 26h7M22 26h20M54 26h7"/><path d="M19 15.5h29"/><circle cx="16" cy="26" r="5"/><circle cx="48" cy="26" r="5"/></svg>';
+const ICON_GO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const ICON_CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+function brandHasVp(b){ return b.models.some(m=>m.cat==='vp'); }
+function brandHasVu(b){ return b.models.some(m=>m.cat!=='vp'); }
+function setVehType(t){ state.vehType = t; renderModels(); window.scrollTo({top:0, behavior:'smooth'}); }
+function eurInt(n){ return Math.round(n).toLocaleString('fr-FR') + ' €'; }
 function renderModels(){
-  document.getElementById('modelGrid').innerHTML = ['petit','moyen','grand'].map(cat=>{
+  const b = state.brand, grid = document.getElementById('modelGrid'), bar = document.getElementById('vehTypeBar');
+  const hasVp = brandHasVp(b), hasVu = brandHasVu(b);
+  if(!state.vehType && !(hasVp && hasVu)) state.vehType = hasVp ? 'vp' : 'vu';
+  const h1 = document.querySelector('#view-modele .page-head h1');
+  bar.innerHTML = '';
+  if(!state.vehType){
+    h1.textContent = 'Quel type de véhicule ?';
+    grid.className = 'vt-grid';
+    grid.innerHTML = `
+      <div class="vt-card" onclick="setVehType('vu')">
+        <div class="vt-ico">${ICON_VAN}</div>
+        <div class="vt-body"><div class="vt-title">Véhicule utilitaire</div></div>
+        <div class="vt-go">${ICON_GO}</div>
+      </div>
+      <div class="vt-card" onclick="setVehType('vp')">
+        <div class="vt-ico">${ICON_CAR}</div>
+        <div class="vt-body"><div class="vt-title">Véhicule de société</div></div>
+        <div class="vt-go">${ICON_GO}</div>
+      </div>`;
+    return;
+  }
+  h1.textContent = 'Quel est votre modèle ?';
+  if(hasVp && hasVu) bar.innerHTML = `<div class="vt-switch">
+      <button class="${state.vehType==='vu'?'on':''}" onclick="setVehType('vu')">Véhicules utilitaires</button>
+      <button class="${state.vehType==='vp'?'on':''}" onclick="setVehType('vp')">Véhicules de société</button>
+    </div>`;
+  if(state.vehType === 'vp'){
+    grid.className = 'vp-grid';
+    grid.innerHTML = b.models.filter(m=>m.cat==='vp').map(m=>{
+      return `<div class="vp-card" onclick="selectModel('${m.id}')">
+        <div class="vp-ico">${ICON_CAR}</div>
+        <div class="vp-body">
+          <div class="vp-name">${m.name}</div>
+        </div>
+        <div class="vp-chev">${ICON_CHEV}</div>
+      </div>`;
+    }).join('');
+    return;
+  }
+  grid.className = 'model-grid';
+  grid.innerHTML = ['petit','moyen','grand'].map(cat=>{
     const models = state.brand.models.filter(m=>m.cat===cat);
     if(!models.length) return '';
     return `<div class="model-col">${models.map(m=>`
@@ -1882,6 +2040,7 @@ function renderModels(){
 }
 function selectModel(id){
   state.model = state.brand.models.find(m=>m.id===id);
+  if(state.model.cat === 'vp'){ buildVpServices(state.model); openCats = {0:true, 1:true}; }
   state.dims = {}; state.selected = {}; state.noOptions = false;
   const noOptionsBox1 = document.getElementById('noOptions'); if(noOptionsBox1) noOptionsBox1.checked = false;
   if(needsDimensions(state.model)){
@@ -2057,6 +2216,7 @@ function confirmDimensionsAndGoDevis(){
 /* ---- étape 4 : devis ---- */
 function dimsSummaryText(){
   const d = state.dims, parts = [];
+  if(state.model && state.model.cat === 'vp' && state.model.note) parts.push(state.model.note);
   if(d.length) parts.push(d.length + (d.height?d.height:''));
   if(d.plc!=null) parts.push(d.plc+' PLC');
   if(d.portesArriere) parts.push(d.portesArriere);
@@ -2080,7 +2240,7 @@ function renderDevisHeader(){
 let openCats = {0:true};
 function renderServices(){
   const list = document.getElementById('catList');
-  list.innerHTML = services.map((c,ci)=>{
+  list.innerHTML = activeServices().map((c,ci)=>{
     const count = c.items.filter((it,ii)=>state.selected[ci+'-'+ii]).length;
     const isOpen = !!openCats[ci];
     const rows = c.items.map((it,ii)=>{
@@ -2122,6 +2282,7 @@ function renderServices(){
 }
 /* Prix du kit AVANT remise cabine approfondie, pour affichage barré */
 function item_basePrice(item){
+  if(item.fixedPrice != null) return item.fixedPrice;
   const grille = priceGrille[state.model.cat];
   const p = item.price[grille];
   if(p == null) return null;
@@ -2134,17 +2295,17 @@ const UTAC_TRIGGER_GROUPS = ['kitbois','meuble-gauche','meuble-droit','galerie']
 function utacPrice(){ return isLilleAgency ? 90 : 98; }
 const UTAC_LABEL = 'Annexes UTAC suivant transformation et changement de poids du véhicule';
 function utacTriggered(){
-  return services.some((c,ci)=>c.items.some((it,ii)=>state.selected[ci+'-'+ii] && UTAC_TRIGGER_GROUPS.includes(it.group)));
+  return activeServices().some((c,ci)=>c.items.some((it,ii)=>state.selected[ci+'-'+ii] && UTAC_TRIGGER_GROUPS.includes(it.group)));
 }
 function toggleCat(ci){ openCats[ci] = !openCats[ci]; renderServices(); }
 function toggleItem(key){
   const [ciStr, iiStr] = key.split('-');
   const ci = +ciStr, ii = +iiStr;
-  const item = services[ci].items[ii];
+  const item = activeServices()[ci].items[ii];
   const turningOn = !state.selected[key];
   if(turningOn && item.group){
     // Exclusivité : décoche tout autre item du même groupe dans la même catégorie
-    services[ci].items.forEach((it2,ii2)=>{
+    activeServices()[ci].items.forEach((it2,ii2)=>{
       if(it2.group === item.group && ii2 !== ii) state.selected[ci+'-'+ii2] = false;
     });
   }
@@ -2156,7 +2317,7 @@ function renderSummary(){
   const linesEl = document.getElementById('summaryLines');
   const amountEl = document.getElementById('summaryAmount');
   let total = 0, lines = [];
-  services.forEach((c,ci)=>c.items.forEach((it,ii)=>{
+  activeServices().forEach((c,ci)=>c.items.forEach((it,ii)=>{
     if(state.selected[ci+'-'+ii]){ const p = priceFor(it); total += p; lines.push({name:it.name, price:p}); }
   }));
   if(lines.length && utacTriggered()){ total += utacPrice(); lines.push({name:UTAC_LABEL, price:utacPrice()}); }
@@ -2192,7 +2353,7 @@ function concessRemise(){ return (session && session.account && typeof session.a
 function computeQuoteLines(){
   const pct = concessRemise();
   const lines = [];
-  services.forEach((c,ci)=>c.items.forEach((it,ii)=>{
+  activeServices().forEach((c,ci)=>c.items.forEach((it,ii)=>{
     if(state.selected[ci+'-'+ii]) lines.push({cat:c.cat, name:it.name, note:noteFor(it), price:priceFor(it), remisable:true});
   }));
   if(lines.length && utacTriggered()) lines.push({cat:'Annexes', name:UTAC_LABEL, note:null, price:utacPrice(), remisable:REMISE_ON_UTAC});
