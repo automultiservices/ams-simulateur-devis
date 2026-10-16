@@ -1425,7 +1425,13 @@ function slugify(s){
 function renderAdminPhotos(){
   if(!adminServices) adminServices = JSON.parse(JSON.stringify(services));
   const body = document.getElementById('admin-body');
-  const opts = adminServices.map((c,ci)=>`<optgroup label="${escAttr(c.cat)}">${c.items.map((it,ii)=>`<option value="${ci}-${ii}">${escAttr(it.name)}${it.photo?' 📷':''}</option>`).join('')}</optgroup>`).join('');
+  const opts = adminServices.map((c,ci)=>`<optgroup label="${escAttr(c.cat)}">${c.items.map((it,ii)=>`<option value="${ci}-${ii}">${escAttr(it.name)}${it.photo?' 📷':''}</option>`).join('')}</optgroup>`).join('')
+    + `<optgroup label="Voitures de société — photos génériques (tous modèles)">
+        <option value="vp:${VP_PHOTOS.sans}">Transformation VP-VU</option>
+        <option value="vp:${VP_PHOTOS.avec}">Transformation VP-VU + tablette cache-bagages</option>
+        <option value="vp:${VP_PHOTOS.grille}">Grille de séparation</option></optgroup>`
+    + brands.filter(b=>(VP_MODELS[b.id]||[]).length).map(b=>`<optgroup label="Voitures de société — ${escAttr(b.name)} (photo propre au modèle)">${
+        VP_MODELS[b.id].map(m=>`<option value="vp:${m.id}">${escAttr(m.name)} — Transformation VP-VU</option><option value="vp:${m.id}-tablette">${escAttr(m.name)} — VP-VU + tablette</option>`).join('')}</optgroup>`).join('');
   body.innerHTML = `
     <div class="admin-card">
       <h3>1. Choisir la prestation</h3>
@@ -1448,7 +1454,7 @@ function renderAdminPhotos(){
       <ol class="admin-hint" style="padding-left:18px;">
         <li>Téléchargez les 2 fichiers (bouton ci-dessus).</li>
         <li>Ouvrez <a href="https://github.com/automultiservices/ams-simulateur-devis/upload/main/img/prestations" target="_blank" rel="noopener"><b>le dossier photos sur GitHub ↗</b></a>, glissez les 2 fichiers, puis « Commit changes ».</li>
-        <li>Revenez dans l'onglet <b>Prestations &amp; prix</b> et cliquez <b>Enregistrer</b> (le nom de la photo y est déjà rempli).</li>
+        <li>Revenez dans l'onglet <b>Prestations &amp; prix</b> et cliquez <b>Enregistrer</b> (le nom de la photo y est déjà rempli).<br><i>Voitures de société : rien à enregistrer, la photo s'affiche dès qu'elle est sur GitHub.</i></li>
       </ol>
       <p class="admin-hint" style="margin-top:8px;">Pour remplacer une photo existante, utilisez un nouveau nom (ex. <code>kit-bois-lisse-2</code>) : sinon certains navigateurs garderont l'ancienne en mémoire quelques minutes.</p>
     </div>`;
@@ -1460,6 +1466,7 @@ function renderAdminPhotos(){
 function photoItemChanged(){
   const v = document.getElementById('ph-item').value;
   if(!v) return;
+  if(v.startsWith('vp:')){ photoTool.name = v.slice(3); document.getElementById('ph-name').value = photoTool.name; return; }
   const [ci,ii] = v.split('-').map(Number);
   const it = adminServices[ci].items[ii];
   photoTool.name = it.photo || slugify(it.name);
@@ -1512,7 +1519,7 @@ async function photoFileChosen(file){
       </div>`;
     // Associe automatiquement le nom à la prestation choisie (à enregistrer dans l'onglet Prestations)
     const v = document.getElementById('ph-item').value;
-    if(v){
+    if(v && !v.startsWith('vp:')){
       const [ci,ii] = v.split('-').map(Number);
       if(adminServices[ci].items[ii].photo !== photoTool.name){
         adminServices[ci].items[ii].photo = photoTool.name;
@@ -1777,15 +1784,20 @@ catLabel.vp = 'Véhicule de société';
 /* Prestations proposées sur une voiture de société : transformation (avec/sans tablette),
    grille de séparation si elle existe, + kit balisage et gyrophare au prix « Expert »
    (repris des prestations utilitaires, donc à jour des prix admin / agence). */
+/* Photos VP-VU (img/prestations/) : photo propre au modèle si présente
+   (ex. vp-clio-vi.webp, vp-clio-vi-tablette.webp), sinon photo générique ci-dessous. */
+const VP_PHOTOS = { sans:'transformation-vp-vu', avec:'transformation-vp-vu-tablette', grille:'grille-de-separation' };
 const VP_ACCESSORIES = ['Kit balisage classe B AV/ARR/LAT', 'Gyroled avec interrupteur'];
 let vpServices = [];
 function buildVpServices(model){
   const [sans, avec, grille] = model.vp.map(v=>v==null ? null : Math.round(v));
   const transfo = [
-    { name:'Transformation VP-VU', note:'Kit Gruau — passage en 2 places, sans tablette cache-bagages', group:'vpvu', fixedPrice:sans },
-    { name:'Transformation VP-VU + tablette cache-bagages', note:'Kit Gruau — passage en 2 places, avec tablette cache-bagages', group:'vpvu', fixedPrice:avec },
+    { name:'Transformation VP-VU', note:'Kit Gruau — passage en 2 places, sans tablette cache-bagages', group:'vpvu', fixedPrice:sans,
+      photo:model.id, photoFallback:VP_PHOTOS.sans },
+    { name:'Transformation VP-VU + tablette cache-bagages', note:'Kit Gruau — passage en 2 places, avec tablette cache-bagages', group:'vpvu', fixedPrice:avec,
+      photo:model.id+'-tablette', photoFallback:VP_PHOTOS.avec },
   ];
-  if(grille != null) transfo.push({ name:'Grille de séparation', note:'En complément de la transformation', fixedPrice:grille });
+  if(grille != null) transfo.push({ name:'Grille de séparation', note:'En complément de la transformation', fixedPrice:grille, photo:VP_PHOTOS.grille });
   const acc = [];
   VP_ACCESSORIES.forEach(n=>{
     let src = null;
@@ -1806,6 +1818,11 @@ const DEFAULT_REMISE = 10;
 const REMISE_ON_UTAC = true;
 /* Photos des prestations : dossier img/prestations/ du dépôt GitHub (WebP). */
 function photoUrl(name, mini){ return 'img/prestations/' + encodeURIComponent(name) + (mini ? '-mini' : '') + '.webp'; }
+function thumbError(el){
+  const fb = el.dataset.fallback;
+  if(fb){ delete el.dataset.fallback; el.dataset.photo = fb; el.src = photoUrl(fb, true); }
+  else el.remove();
+}
 const _photoPreloaded = {};
 function preloadPhoto(name){
   if(!name || _photoPreloaded[name]) return;
@@ -2250,7 +2267,7 @@ function renderServices(){
       if(price == null) return '';
       const note = noteFor(it);
       const priceHtml = `${price.toLocaleString('fr-FR')} €`;
-      const thumb = it.photo ? `<img class="line-thumb" loading="lazy" src="${photoUrl(it.photo,true)}" alt="" data-photo="${escAttr(it.photo)}" data-caption="${escAttr(it.name)}" title="Voir la photo" onerror="this.remove()">` : '';
+      const thumb = it.photo ? `<img class="line-thumb" loading="lazy" src="${photoUrl(it.photo,true)}" alt="" data-photo="${escAttr(it.photo)}" data-caption="${escAttr(it.name)}"${it.photoFallback?` data-fallback="${escAttr(it.photoFallback)}"`:''} title="Voir la photo" onerror="thumbError(this)">` : '';
       return `<div class="line-item">
         <div class="line-left" data-toggle="${key}">
           <div class="checkbox${checked?' checked':''}">${checked?'<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="white" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>':''}</div>
