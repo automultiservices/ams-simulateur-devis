@@ -1426,12 +1426,9 @@ function renderAdminPhotos(){
   if(!adminServices) adminServices = JSON.parse(JSON.stringify(services));
   const body = document.getElementById('admin-body');
   const opts = adminServices.map((c,ci)=>`<optgroup label="${escAttr(c.cat)}">${c.items.map((it,ii)=>`<option value="${ci}-${ii}">${escAttr(it.name)}${it.photo?' 📷':''}</option>`).join('')}</optgroup>`).join('')
-    + `<optgroup label="Voitures de société — photos génériques (tous modèles)">
-        <option value="vp:${VP_PHOTOS.sans}">Transformation VP-VU</option>
-        <option value="vp:${VP_PHOTOS.avec}">Transformation VP-VU + tablette cache-bagages</option>
-        <option value="vp:${VP_PHOTOS.grille}">Grille de séparation</option></optgroup>`
-    + brands.filter(b=>(VP_MODELS[b.id]||[]).length).map(b=>`<optgroup label="Voitures de société — ${escAttr(b.name)} (photo propre au modèle)">${
-        VP_MODELS[b.id].map(m=>`<option value="vp:${m.id}">${escAttr(m.name)} — Transformation VP-VU</option><option value="vp:${m.id}-tablette">${escAttr(m.name)} — VP-VU + tablette</option>`).join('')}</optgroup>`).join('');
+    + `<optgroup label="Voitures de société (photo commune à tous les modèles)">
+        <option value="vp:${VP_PHOTOS.transfo}">Transformation VP-VU (avec ou sans tablette)</option>
+        <option value="vp:${VP_PHOTOS.grille}">Grille de séparation</option></optgroup>`;
   body.innerHTML = `
     <div class="admin-card">
       <h3>1. Choisir la prestation</h3>
@@ -1784,18 +1781,16 @@ catLabel.vp = 'Véhicule de société';
 /* Prestations proposées sur une voiture de société : transformation (avec/sans tablette),
    grille de séparation si elle existe, + kit balisage et gyrophare au prix « Expert »
    (repris des prestations utilitaires, donc à jour des prix admin / agence). */
-/* Photos VP-VU (img/prestations/) : photo propre au modèle si présente
-   (ex. vp-clio-vi.webp, vp-clio-vi-tablette.webp), sinon photo générique ci-dessous. */
-const VP_PHOTOS = { sans:'transformation-vp-vu', avec:'transformation-vp-vu-tablette', grille:'grille-de-separation' };
+/* Photos VP-VU (img/prestations/) : une seule photo commune à tous les modèles.
+   Kit balisage et gyrophare reprennent la photo de la prestation utilitaire. */
+const VP_PHOTOS = { transfo:'transformation-vp-vu', grille:'grille-de-separation' };
 const VP_ACCESSORIES = ['Kit balisage classe B AV/ARR/LAT', 'Gyroled avec interrupteur'];
 let vpServices = [];
 function buildVpServices(model){
   const [sans, avec, grille] = model.vp.map(v=>v==null ? null : Math.round(v));
   const transfo = [
-    { name:'Transformation VP-VU', note:'Kit Gruau — passage en 2 places, sans tablette cache-bagages', group:'vpvu', fixedPrice:sans,
-      photo:model.id, photoFallback:VP_PHOTOS.sans },
-    { name:'Transformation VP-VU + tablette cache-bagages', note:'Kit Gruau — passage en 2 places, avec tablette cache-bagages', group:'vpvu', fixedPrice:avec,
-      photo:model.id+'-tablette', photoFallback:VP_PHOTOS.avec },
+    { name:'Transformation VP-VU', note:'Kit Gruau — passage en 2 places, sans tablette cache-bagages', group:'vpvu', fixedPrice:sans, photo:VP_PHOTOS.transfo },
+    { name:'Transformation VP-VU + tablette cache-bagages', note:'Kit Gruau — passage en 2 places, avec tablette cache-bagages', group:'vpvu', fixedPrice:avec, photo:VP_PHOTOS.transfo },
   ];
   if(grille != null) transfo.push({ name:'Grille de séparation', note:'En complément de la transformation', fixedPrice:grille, photo:VP_PHOTOS.grille });
   const acc = [];
@@ -1805,7 +1800,7 @@ function buildVpServices(model){
     if(!src || !src.price) return;
     const p = Array.isArray(src.price.expert) ? src.price.expert[0] : src.price.expert;
     if(p == null) return;
-    acc.push({ name:src.name, note:src.note || null, photo:src.photo, fixedPrice:Math.round(p) });
+    acc.push({ name:src.name, note:src.note || null, photo:src.photo || slugify(src.name), fixedPrice:Math.round(p) });
   });
   vpServices = [{ cat:'Transformation VP-VU', icon:'⇄', items:transfo }];
   if(acc.length) vpServices.push({ cat:'Accessoires', icon:'✚', items:acc });
@@ -1818,11 +1813,6 @@ const DEFAULT_REMISE = 10;
 const REMISE_ON_UTAC = true;
 /* Photos des prestations : dossier img/prestations/ du dépôt GitHub (WebP). */
 function photoUrl(name, mini){ return 'img/prestations/' + encodeURIComponent(name) + (mini ? '-mini' : '') + '.webp'; }
-function thumbError(el){
-  const fb = el.dataset.fallback;
-  if(fb){ delete el.dataset.fallback; el.dataset.photo = fb; el.src = photoUrl(fb, true); }
-  else el.remove();
-}
 const _photoPreloaded = {};
 function preloadPhoto(name){
   if(!name || _photoPreloaded[name]) return;
@@ -2267,7 +2257,7 @@ function renderServices(){
       if(price == null) return '';
       const note = noteFor(it);
       const priceHtml = `${price.toLocaleString('fr-FR')} €`;
-      const thumb = it.photo ? `<img class="line-thumb" loading="lazy" src="${photoUrl(it.photo,true)}" alt="" data-photo="${escAttr(it.photo)}" data-caption="${escAttr(it.name)}"${it.photoFallback?` data-fallback="${escAttr(it.photoFallback)}"`:''} title="Voir la photo" onerror="thumbError(this)">` : '';
+      const thumb = it.photo ? `<img class="line-thumb" loading="lazy" src="${photoUrl(it.photo,true)}" alt="" data-photo="${escAttr(it.photo)}" data-caption="${escAttr(it.name)}" title="Voir la photo" onerror="this.remove()">` : '';
       return `<div class="line-item">
         <div class="line-left" data-toggle="${key}">
           <div class="checkbox${checked?' checked':''}">${checked?'<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="white" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>':''}</div>
