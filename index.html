@@ -647,7 +647,7 @@ auth.onAuthStateChanged(async (user) => {
     }
     session = { account: {
       id: d.loginId, label: d.label,
-      agencyId: d.agencyId || '', priceMultiplier: d.priceMultiplier || 1,
+      agencyId: d.agencyId || '', site: d.site || '', priceMultiplier: d.priceMultiplier || 1,
       remise: (typeof d.remise === 'number') ? d.remise : DEFAULT_REMISE
     } };
     await loadServices();
@@ -1321,8 +1321,8 @@ async function renderAdminConcess(){
     </div>
     <div id="concess-form"></div>
     <table class="admin-tbl">
-      <thead><tr><th>Identifiant</th><th>Code</th><th>Nom / libellé</th><th>Agence</th><th>Mult.</th><th title="Remise appliquée sur les devis « Concession »">Remise %</th><th>Actif</th><th></th></tr></thead>
-      <tbody id="concess-rows"><tr><td colspan="8" class="admin-hint">Chargement…</td></tr></tbody>
+      <thead><tr><th>Identifiant</th><th>Code</th><th>Nom / libellé</th><th>Agence</th><th title="Coordonnées affichées sur le PDF">Site AMS (PDF)</th><th>Mult.</th><th title="Remise appliquée sur les devis « Concession »">Remise %</th><th>Actif</th><th></th></tr></thead>
+      <tbody id="concess-rows"><tr><td colspan="9" class="admin-hint">Chargement…</td></tr></tbody>
     </table>
     <p class="admin-hint" style="margin-top:12px;">Le code est stocké en clair (accès simulateur uniquement, enjeu faible). Le modifier ici met aussi à jour la connexion. « Supprimer » retire le compte de connexion ET la fiche. L'agence détermine la grille de prix vue par ce concessionnaire (gérée dans l'onglet Agences). « Remise % » : remise appliquée ligne par ligne quand le concessionnaire génère un devis « Concession » (${DEFAULT_REMISE} % par défaut).</p>
   `;
@@ -1341,13 +1341,17 @@ async function renderAdminConcess(){
           <option value="" ${!r.agencyId?'selected':''}>Chartres (par défaut)</option>
           ${adminAgencies.map(a=>`<option value="${a.id}" ${r.agencyId===a.id?'selected':''}>${escAttr(a.name)}</option>`).join('')}
         </select></td>
+        <td><select class="admin-in" onchange="updateConcess('${r.uid}','site',this.value)">
+          <option value="" ${!r.site?'selected':''}>Auto (selon agence)</option>
+          ${Object.keys(AMS_SITES).map(k=>`<option value="${k}" ${r.site===k?'selected':''}>${AMS_SITES[k].label}</option>`).join('')}
+        </select></td>
         <td><input class="admin-in num" value="${escAttr(r.priceMultiplier==null?1:r.priceMultiplier)}" onchange="updateConcess('${r.uid}','priceMultiplier',parseFloat(this.value)||1)"></td>
         <td><input class="admin-in num" style="width:64px" value="${escAttr(typeof r.remise==='number'?r.remise:DEFAULT_REMISE)}" onchange="updateConcessRemise('${r.uid}',this)"></td>
         <td style="text-align:center"><input type="checkbox" ${r.actif===false?'':'checked'} onchange="updateConcess('${r.uid}','actif',this.checked)"></td>
         <td><button class="admin-btn sm danger" onclick="deleteConcess('${r.uid}','${escAttr(r.loginId)}')">Supprimer</button></td>
-      </tr>`).join('') : '<tr><td colspan="8" class="admin-hint">Aucun concessionnaire.</td></tr>';
+      </tr>`).join('') : '<tr><td colspan="9" class="admin-hint">Aucun concessionnaire.</td></tr>';
   } catch(e){
-    document.getElementById('concess-rows').innerHTML = `<tr><td colspan="8" class="admin-hint">Erreur : ${escAttr(e.message)}</td></tr>`;
+    document.getElementById('concess-rows').innerHTML = `<tr><td colspan="9" class="admin-hint">Erreur : ${escAttr(e.message)}</td></tr>`;
   }
 }
 
@@ -1818,10 +1822,39 @@ function buildVpServices(model){
 }
 function activeServices(){ return (state.model && state.model.cat === 'vp') ? vpServices : services; }
 
+/* Coordonnées des sites AMS (bloc « Émetteur » du PDF) — sources : registres SIRENE / Pappers, oct. 2026. */
+const AMS_SITES = {
+  chartres:  { label:'AMS Chartres',  rs:'AMS AUTO MULTI SERVICES', adr:"2 Rue du Val de l'Eure", cp:'28630 Fontenay-sur-Eure', tel:'02 37 33 71 11', siret:'501 219 083 00034' },
+  nord:      { label:'AMS Nord (Lille)', rs:'AMS NORD – AUTO MULTI SERVICES NORD', adr:'Zone Industrielle A — 3 rue René Cauche', cp:'59139 Noyelles-lès-Seclin', tel:'03 28 01 04 00', siret:'520 499 484 00035' },
+  normandie: { label:'AMS Normandie (Caen)', rs:'AUTO MULTI SERVICES NORMANDY', adr:'6 rue de Normandie — Bât. C, Parc Eole 2', cp:'14540 Grentheville', tel:'06 31 45 54 37', siret:'930 070 487 00010' },
+  ouest:     { label:'AMS Ouest (Évreux)', rs:'AMS OUEST – AUTO MULTI SERVICES OUEST', adr:'80 rue Nungesser et Coli', cp:'27930 Guichainville', tel:'', siret:'927 504 225 00016' },
+  idf:       { label:'AMS IDF', rs:'AUTO MULTI SERVICES ILE DE FRANCE', adr:'11 rue du Gibet', cp:'78310 Coignières', tel:'06 83 55 71 10', siret:'931 610 604 00023' },
+  parisest:  { label:'AMS Paris-Est', rs:'AMS PARIS-EST', adr:'60 rue de la Fontaine', cp:'77240 Cesson', tel:'06 13 87 67 42', siret:'' }
+};
+/* Site émetteur : choisi par concession dans l'admin, sinon déduit de l'agence (Lille→Nord, Normandie), sinon Chartres. */
+function currentSite(){
+  const acc = session && session.account;
+  if(acc && acc.site && AMS_SITES[acc.site]) return AMS_SITES[acc.site];
+  const n = ((acc && acc.agencyName) || '').toLowerCase();
+  if(n.includes('lille') || n.includes('nord')) return AMS_SITES.nord;
+  if(n.includes('normandie') || n.includes('caen')) return AMS_SITES.normandie;
+  return AMS_SITES.chartres;
+}
+function emitterHtml(){
+  const e = currentSite();
+  return `<div style="font-weight:700; font-size:13.5px;">${e.rs}</div>
+        <div style="font-size:12px; color:#3A3C41; line-height:1.6; margin-top:2px;">
+          ${e.adr}<br>${e.cp}<br>
+          ${e.tel ? 'Tél : ' + e.tel + '<br>' : ''}
+          comams@automultiservices.com — www.automultiservices.com
+          ${e.siret ? '<br>SIRET ' + e.siret : ''}
+        </div>`;
+}
+
 /* Remise concession par défaut (%) — modifiable par concessionnaire dans l'admin. */
 const DEFAULT_REMISE = 10;
 /* L'annexe UTAC est remisée comme les prestations. Passer à false pour l'exclure. */
-const REMISE_ON_UTAC = true;
+const REMISE_ON_UTAC = false; // annexe UTAC (98 €) jamais remisée
 /* Photos des prestations : dossier img/prestations/ du dépôt GitHub (WebP). */
 function photoUrl(name, mini){ return 'img/prestations/' + encodeURIComponent(name) + (mini ? '-mini' : '') + '.webp'; }
 const _photoPreloaded = {};
@@ -2558,14 +2591,7 @@ function renderPrintArea(){
     <div style="display:flex; justify-content:space-between; gap:30px; margin-bottom:26px;">
       <div style="flex:1;">
         <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#F2A63C; margin-bottom:6px;">Émetteur</div>
-        <div style="font-weight:700; font-size:13.5px;">SARL AMS FOCHESATO</div>
-        <div style="font-size:12px; color:#3A3C41; line-height:1.6; margin-top:2px;">
-          2 Avenue du Val de l'Eure — Parc Euroval<br>
-          28630 Fontenay-sur-Eure<br>
-          Tél : 02 37 33 71 11<br>
-          comams@automultiservices.com — www.automultiservices.com<br>
-          SIRET 501 219 083 00034
-        </div>
+        ${emitterHtml()}
       </div>
       <div style="flex:1;">
         <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:#F2A63C; margin-bottom:6px;">Client</div>
