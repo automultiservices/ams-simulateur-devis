@@ -82,10 +82,10 @@
   .page-head h1{ font-size:25px; margin-bottom:6px; }
   .page-head p{ color:var(--grey-text); font-size:14px; }
 
-  .brand-grid{ display:grid; grid-template-columns:repeat(5, 1fr); gap:14px; }
+  .brand-grid{ display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:14px; }
   .brand-card{ background:#fff; border:1px solid var(--grey-line); border-radius:var(--radius); padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.2s; height:128px; box-shadow: var(--shadow-sm); }
   .brand-card:hover{ border-color:rgba(242,166,60,0.55); box-shadow:var(--shadow-amber); transform:translateY(-3px); }
-  .brand-card img{ height:64px; width:150px; object-fit:contain; object-position:center; }
+  .brand-card img{ height:64px; width:150px; max-width:85%; object-fit:contain; object-position:center; }
 
   .brand-recap{ display:flex; align-items:center; gap:12px; margin-bottom:26px; background:#fff; border:1px solid var(--grey-line); border-radius:var(--radius); padding:12px 18px; width:fit-content; box-shadow:var(--shadow-sm); }
   .brand-recap img{ height:32px; width:88px; object-fit:contain; }
@@ -286,10 +286,102 @@
 
   @media (max-width:860px){
     .devis-layout{ grid-template-columns:1fr; }
-    .brand-grid{ grid-template-columns:repeat(3,1fr); }
+    .brand-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); }
     .contact-grid{ grid-template-columns:1fr; }
     .contact-layout{ grid-template-columns:1fr; }
     .contact-recap{ position:static; order:-1; }
+  }
+
+  /* ===================== VERSION MOBILE (téléphones uniquement, < 640 px) =====================
+     N'affecte ni l'affichage ordinateur/tablette, ni le PDF. */
+  .m-bar{ display:none; }
+  @media screen and (max-width:640px){
+    /* Champs en 16 px : évite le zoom automatique d'iPhone quand on touche un champ */
+    input, select, textarea{ font-size:16px !important; }
+    .topbar{ padding:10px 14px; }
+    .topbar-left{ gap:10px; min-width:0; }
+    .topbar-left img{ height:34px; padding:3px 6px; }
+    .topbar-title{ font-size:14px; }
+    .topbar-sub{ display:none; }
+    .topbar-right{ gap:10px; font-size:12px; }
+    .pill{ padding:5px 10px; font-size:11px; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .progress-wrap{ padding:0 14px; }
+    .progress{ flex-wrap:nowrap; overflow-x:auto; padding:11px 0; scrollbar-width:none; }
+    .progress::-webkit-scrollbar{ display:none; }
+    .step{ font-size:0; gap:0; flex-shrink:0; }
+    .step.active{ font-size:13px; gap:7px; }
+    .step-num{ width:24px; height:24px; }
+    .step-line{ width:14px; margin:0 5px; flex-shrink:0; }
+    .shell{ padding:16px 14px 40px; }
+    .back-link{ padding:9px 14px; font-size:13px; margin-bottom:14px; }
+    .page-head{ margin-bottom:18px; }
+    .page-head h1{ font-size:20px; line-height:1.25; }
+    .page-head p{ font-size:13px; }
+    .brand-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .brand-card{ height:92px; }
+    .brand-card img{ height:48px; width:120px; max-width:85%; }
+    .brand-card:hover, .model-card:hover, .vt-card:hover, .vp-card:hover{ transform:none; }
+    .brand-recap{ margin-bottom:16px; }
+    .model-grid, .model-col{ gap:12px; }
+    .model-card{ padding:16px; }
+    .model-name{ font-size:17px; }
+    .vt-grid{ gap:12px; }
+    .vt-card{ padding:18px 16px; gap:14px; border-radius:16px; }
+    .vt-ico{ flex-basis:60px; height:60px; border-radius:14px; }
+    .vt-ico svg{ width:42px; height:22px; }
+    .vt-title{ font-size:18px; }
+    .vt-desc{ font-size:12.5px; }
+    .vt-switch{ display:flex; width:100%; }
+    .vt-switch button{ flex:1; padding:11px 10px; }
+    .vp-grid{ grid-template-columns:1fr; gap:10px; }
+    .config-panel, .contact-panel{ padding:18px 16px; }
+    .config-groups{ gap:22px; }
+    .config-options{ max-width:none; }
+    .config-opt{ padding:12px 16px; min-width:56px; }
+    .cta-row{ flex-direction:column; align-items:stretch; margin-top:20px; }
+    .cta-row .btn-primary, .cta-row .btn-secondary{ width:100%; justify-content:center; padding:15px 18px; }
+    .veh-recap{ padding:12px 14px; gap:8px; flex-wrap:wrap; }
+    .veh-recap-left{ gap:10px; min-width:0; }
+    .veh-recap-left img{ height:28px; width:70px; }
+    .pose-badge{ margin-bottom:14px; }
+    .cat-head{ padding:14px; }
+    .cat-name{ font-size:14px; }
+    .cat-count{ font-size:11px; }
+    /* Ligne de prestation : nom à gauche, prix en haut à droite, photo en dessous du prix */
+    .line-item{ display:grid; grid-template-columns:1fr auto; grid-template-areas:"left price" "left thumb"; gap:6px 10px; padding:14px; align-items:start; }
+    .line-left{ grid-area:left; }
+    .line-price{ grid-area:price; justify-self:end; font-size:14px; }
+    .line-thumb{ grid-area:thumb; justify-self:end; width:40px; height:40px; }
+    .checkbox{ width:22px; height:22px; }
+    .line-name{ font-size:13.5px; }
+    .summary, .contact-recap{ position:static; padding:18px 16px; }
+    .qty-ctrl button{ width:38px; height:38px; }
+    /* Barre fixe en bas : total + Continuer (étape « Composez votre devis ») */
+    #view-devis.show{ padding-bottom:84px; }
+    .m-bar{ display:flex; position:fixed; left:0; right:0; bottom:0; z-index:50; align-items:center; gap:12px;
+      padding:10px 14px calc(10px + env(safe-area-inset-bottom)); background:#fff; border-top:1px solid var(--grey-line);
+      box-shadow:0 -6px 18px rgba(20,22,25,.10); }
+    .m-bar-total{ flex:1; min-width:0; cursor:pointer; }
+    .m-bar-total span{ display:block; font-size:11px; color:var(--grey-text); font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+    .m-bar-total b{ font-size:21px; font-weight:900; color:var(--ink); }
+    .m-bar-total small{ font-size:11px; color:var(--amber-dark); font-weight:700; margin-left:6px; }
+    .m-bar-btn{ flex:0 0 auto; background:linear-gradient(160deg, #F5B558, var(--amber) 55%, var(--amber-dark)); color:#231604; border:none;
+      padding:14px 20px; border-radius:10px; font:inherit; font-weight:800; font-size:15px; box-shadow:var(--shadow-amber); }
+    .m-bar-btn:disabled{ background:var(--chrome-2); color:#8b8f95; box-shadow:none; }
+    .contact-grid{ gap:0 12px; }
+    .contact-field{ margin-bottom:14px; }
+    .contact-field input{ padding:13px; }
+    .pickup-box, .pricemode-box{ padding:14px; }
+    .pickup-row input[type=date]{ width:100%; }
+    .final-hero{ gap:14px; margin-bottom:18px; }
+    .final-hero-icon{ width:44px; height:44px; font-size:22px; }
+    .final-hero h1{ font-size:20px; }
+    .final-card{ padding:18px 16px; }
+    .final-card .btn-primary, .final-card .btn-secondary{ padding:15px 16px; text-align:center; }
+    #printConcessionBtns > div[style*="grid"]{ grid-template-columns:1fr !important; }
+    #view-final.show{ margin:-16px -14px -40px; padding:16px 14px 40px; }
+    .login-card{ padding:32px 22px; }
+    #photoViewer .pv-close{ top:8px; right:8px; }
   }
 </style>
 
@@ -407,6 +499,11 @@
           <div class="qty-slot" id="qtyBoxDevis"></div>
           <button class="summary-cta" id="toContactBtn" onclick="goTo('contact')" disabled>Continuer →</button>
         </div>
+      </div>
+      <!-- Barre mobile (visible uniquement sur téléphone) -->
+      <div class="m-bar" id="mBar">
+        <div class="m-bar-total" onclick="document.querySelector('#view-devis .summary').scrollIntoView({behavior:'smooth'})"><span>Total estimé HT</span><b id="mBarAmount">0 €</b><small>Détail ▾</small></div>
+        <button class="m-bar-btn" id="mBarBtn" onclick="goTo('contact')" disabled>Continuer →</button>
       </div>
     </div>
 
@@ -2748,5 +2845,17 @@ function sendQuoteEmail(){
 }
 </script>
 
+<script>
+/* Version mobile : la barre du bas recopie le total et l'état du bouton « Continuer » du récapitulatif. */
+(function(){
+  const amt=document.getElementById('summaryAmount'), btn=document.getElementById('toContactBtn');
+  const mAmt=document.getElementById('mBarAmount'), mBtn=document.getElementById('mBarBtn');
+  if(!amt||!btn||!mAmt||!mBtn) return;
+  const sync=()=>{ mAmt.textContent=amt.textContent; mBtn.disabled=btn.disabled; };
+  new MutationObserver(sync).observe(amt,{childList:true,characterData:true,subtree:true});
+  new MutationObserver(sync).observe(btn,{attributes:true,attributeFilter:['disabled']});
+  sync();
+})();
+</script>
 </body>
 </html>
