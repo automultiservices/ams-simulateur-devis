@@ -1854,40 +1854,93 @@ const brands = [
    VOITURES DE SOCIÉTÉ — transformation VP-VU (kits Gruau, tarif 2026)
    vp:[prix sans tablette, prix avec tablette cache-bagages, grille de séparation | null]
    Prix client final HT arrondis à l'euro (la remise concession s'applique comme ailleurs).
-   Source : Transfo_VP-VU_a_valider.xlsx (validé le 16/10/2026).
+   Source : Transfo_VP-VU_a_valider.xlsx (validé le 16/10/2026), complété le 02/11/2026
+   avec tarifs_distributeurs_gruau_vsca_2026-indF (col. « Tarif 2026 Client Final »).
 ========================================================================= */
 const VP_MODELS = {
   renault:[
-    {id:'vp-clio-vi', name:"Clio VI", note:"Hybride, Avec ou sans roue de secours", vp:[927,1200,null]},
+    {id:'vp-twingo-iv', name:"Twingo IV", note:"Électrique", vp:[809,1087,null]},
+    {id:'vp-clio-vi', name:"Clio VI", note:"Hybride ou essence, Avec ou sans roue de secours", vp:[927,1200,587]},
+    {id:'vp-clio-v', name:"Clio V", note:"", vp:[927,1200,587]},
+    {id:'vp-clio-e-tech-ph2', name:"Clio E-Tech (phase 2)", note:"Avec ou sans roue de secours", vp:[927,1200,587]},
     {id:'vp-r5-e-tech', name:"R5 E-Tech", note:"Électrique", vp:[927,1200,587]},
     {id:'vp-r4-e-tech', name:"R4 E-Tech", note:"Électrique", vp:[927,1200,null]},
     {id:'vp-captur-ii', name:"Captur II", note:"Thermique, HEV, PHEV", vp:[1046,1339,null]},
     {id:'vp-megane-e-tech', name:"Mégane E-Tech", note:"Électrique", vp:[1040,1334,null]},
+    {id:'vp-megane-iv', name:"Mégane IV", note:"Non compatible roue de secours", vp:[1040,1334,587]},
     {id:'vp-symbioz', name:"Symbioz", note:"", vp:[1066,1355,null]},
     {id:'vp-arkana-e-tech', name:"Arkana E-Tech", note:"", vp:[1210,1638,null]},
-    {id:'vp-austral', name:"Austral", note:"MHEV, HEV, Sans roue de secours", vp:[1210,1638,null]}],
+    {id:'vp-austral', name:"Austral", note:"MHEV, HEV, Sans roue de secours", vp:[1210,1638,null]},
+    {id:'vp-scenic-e-tech', name:"Scénic E-Tech", note:"Électrique", vp:[1210,1638,null]},
+    {id:'vp-rafale', name:"Rafale", note:"", vp:[1282,1761,null]},
+    {id:'vp-espace-vi', name:"Espace VI", note:"5 et 7 places", vp:[1416,1864,null]}],
   peugeot:[
     {id:'vp-208-e-208', name:"208 / e-208", note:"Compatible MHEV", vp:[927,1200,587]},
     {id:'vp-308-e-308', name:"308 / e-308", note:"MHEV, PHEV, Électrique", vp:[1040,1334,587]},
     {id:'vp-308-sw', name:"308 SW", note:"MHEV, PHEV, Électrique", vp:[1164,1488,587]},
+    {id:'vp-408', name:"408", note:"PHEV uniquement", vp:[1282,1761,null]},
+    {id:'vp-508-sw', name:"508 SW", note:"Génération II", vp:[1282,1761,null]},
     {id:'vp-2008-e-2008', name:"2008 / e-2008", note:"Compatible MHEV", vp:[1046,1339,587]},
-    {id:'vp-3008-e-3008', name:"3008 / e-3008", note:"Non compatible PHEV", vp:[1210,1638,null]}],
+    {id:'vp-3008-e-3008', name:"3008 / e-3008", note:"Non compatible PHEV", vp:[1210,1638,null]},
+    {id:'vp-5008-iii', name:"5008", note:"Génération III, MHEV", vp:[1246,1700,null]}],
   citroen:[
     {id:'vp-c3-e-c3-iv', name:"C3 / ë-C3", note:"Génération IV", vp:[927,1200,587]},
     {id:'vp-c4-e-c4', name:"C4 / ë-C4", note:"Compatible MHEV", vp:[1040,1334,587]},
     {id:'vp-c3-aircross-2025', name:"C3 Aircross", note:"Modèle 2025, Hors 7 places", vp:[1015,1298,587]},
-    {id:'vp-c5-aircross-2026', name:"C5 Aircross", note:"Modèle 2026, Compatible MHEV", vp:[1210,1638,null]}],
+    {id:'vp-c5-aircross-2026', name:"C5 Aircross (2026)", note:"Modèle 2026, Compatible MHEV", vp:[1175,1638,null]},
+    {id:'vp-c5-aircross-2024', name:"C5 Aircross (2024)", note:"Modèle 2024, Thermique et PHEV", vp:[1210,1638,null]},
+    {id:'vp-c5-x', name:"C5 X", note:"PHEV uniquement", vp:[1282,1761,null]}],
   ds:[
+    {id:'vp-ds-3', name:"DS 3", note:"Compatible E-Tense", vp:[1046,1339,null]},
     {id:'vp-ds-4', name:"DS 4", note:"MHEV, E-Tense", vp:[1040,1334,null]},
     {id:'vp-ds-7', name:"DS 7", note:"Non compatible PHEV", vp:[1277,1751,null]}],
   opel:[
     {id:'vp-corsa-corsa-e', name:"Corsa / Corsa-e", note:"Compatible MHEV", vp:[927,1200,587]},
+    {id:'vp-crossland', name:"Crossland", note:"Incompatible banquette arrière coulissante", vp:[1046,1339,null]},
     {id:'vp-astra', name:"Astra", note:"Thermique, MHEV, PHEV", vp:[1040,1334,587]},
+    {id:'vp-astra-st', name:"Astra Sports Tourer", note:"Thermique, MHEV, PHEV", vp:[1164,1488,587]},
     {id:'vp-mokka-mokka-e', name:"Mokka / Mokka-e", note:"Compatible MHEV", vp:[1071,1427,null]},
     {id:'vp-grandland', name:"Grandland", note:"Hybride", vp:[1174,1591,null]}],
   ford:[
     {id:'vp-puma', name:"Puma", note:"HEV, Puma Gen-E", vp:[1066,1385,null]},
-    {id:'vp-kuga-iii', name:"Kuga III", note:"HEV, PHEV, Sans roue de secours", vp:[1200,1519,null]}],
+    {id:'vp-focus-iv', name:"Focus", note:"Génération IV, Active et ST, Incompatible Bass Boomer", vp:[1102,1411,587]},
+    {id:'vp-focus-sw-iv', name:"Focus SW", note:"Génération IV, Active et ST, Incompatible Bass Boomer", vp:[1164,1452,587]},
+    {id:'vp-kuga-iii', name:"Kuga III", note:"HEV, PHEV, Sans roue de secours", vp:[1200,1519,null]},
+    {id:'vp-mustang-mach-e', name:"Mustang Mach-E", note:"Incompatible Bass Boomer", vp:[1200,1519,null]},
+    {id:'vp-explorer', name:"Explorer", note:"Électrique", vp:[1200,1519,null]}],
+  toyota:[
+    {id:'vp-aygo-x', name:"Aygo X", note:"Hybride 2026, Incompatible roue de secours ou caisson", vp:[809,1087,null]},
+    {id:'vp-yaris-iv', name:"Yaris IV", note:"Hybride ou essence", vp:[927,1200,587]},
+    {id:'vp-yaris-cross', name:"Yaris Cross", note:"4x2 ou 4x4", vp:[1046,1339,null]},
+    {id:'vp-corolla-18', name:"Corolla 1.8L", note:"Berline, Avec ou sans roue de secours", vp:[1082,1509,587]},
+    {id:'vp-corolla-20', name:"Corolla 2.0L", note:"Berline, Sans roue de secours", vp:[1138,1566,587]},
+    {id:'vp-corolla-ts', name:"Corolla Touring Sports", note:"Sans roue de secours", vp:[1164,1602,587]},
+    {id:'vp-c-hr-ii', name:"C-HR II", note:"Hybride 1.8L / 2.0L et PHEV (4x2)", vp:[1133,1514,null]},
+    {id:'vp-c-hr-plus', name:"C-HR+", note:"Électrique", vp:[1133,1514,null]},
+    {id:'vp-bz4x', name:"bZ4X", note:"Électrique", vp:[1133,1514,null]},
+    {id:'vp-rav4-xa50', name:"RAV4", note:"XA50, Non compatible PHEV version 2025", vp:[1210,1638,null]},
+    {id:'vp-land-cruiser-250', name:"Land Cruiser 250", note:"Y compris HEV 2026, Hors 7 places", vp:[1298,1746,null]}],
+  volkswagen:[
+    {id:'vp-polo-vi', name:"Polo VI", note:"", vp:[927,1200,null]},
+    {id:'vp-golf-viii', name:"Golf VIII", note:"Compatible Hybride, GTD, GTE, R", vp:[1025,1313,null]}],
+  nissan:[
+    {id:'vp-micra-2025', name:"Micra", note:"Modèle 2025", vp:[927,1200,587]},
+    {id:'vp-juke-ii', name:"Juke II", note:"Compatible HEV", vp:[1046,1514,null]},
+    {id:'vp-qashqai-iii', name:"Qashqai III", note:"Compatible e-Power", vp:[1210,1638,null]},
+    {id:'vp-x-trail-t33', name:"X-Trail", note:"T33", vp:[1246,1715,null]},
+    {id:'vp-leaf-ii', name:"Leaf II", note:"Sans roue de secours", vp:[1437,1761,587]}],
+  kia:[
+    {id:'vp-picanto', name:"Picanto", note:"5 portes", vp:[1024,1187,null]},
+    {id:'vp-ev2', name:"EV2", note:"Modèle 2026", vp:[1024,1154,null]},
+    {id:'vp-rio', name:"Rio", note:"5 portes", vp:[1073,1305,null]},
+    {id:'vp-stonic', name:"Stonic", note:"Thermique et HEV", vp:[1073,1305,null]},
+    {id:'vp-ev3', name:"EV3", note:"Électrique", vp:[1147,1412,null]},
+    {id:'vp-niro', name:"Niro / e-Niro", note:"HEV, PHEV, Électrique", vp:[1154,1420,null]},
+    {id:'vp-ceed', name:"Ceed", note:"Thermique, HEV, PHEV", vp:[1154,1420,null]},
+    {id:'vp-ceed-sw', name:"Ceed SW", note:"Thermique, HEV, PHEV", vp:[1154,1420,null]},
+    {id:'vp-ev6', name:"EV6", note:"Électrique", vp:[1282,1840,null]},
+    {id:'vp-sportage-v', name:"Sportage", note:"Génération 5, MHEV, HEV, PHEV", vp:[1382,1718,null]},
+    {id:'vp-ev4', name:"EV4", note:"Électrique", vp:[1410,1720,null]}],
 };
 /* DS : pas d'utilitaire au catalogue, logo texte. */
 function textLogo(){
