@@ -665,6 +665,10 @@ async function loadServices(){
   } catch(e){
     console.warn('loadServices: fallback catalogue par défaut', e);
   }
+  // Galerie + pupitre (porte-charge latérale) combinables : le pupitre a son propre groupe
+  services.forEach(c => (c.items||[]).forEach(it => {
+    if(/porte-charge|pupitre/i.test(it.name||'')) it.group = 'pupitre';
+  }));
 }
 
 /* Applique par-dessus `services` (déjà chargé) les prix personnalisés d'une agence
@@ -2049,7 +2053,7 @@ let services = [
   { cat:'Galerie', icon:'🛠', items:[
     { name:'Galerie ALU petit rebord plein', note:'Déflecteur + rouleau — sans échelle sur porte arrière', noteMoyen:'Déflecteur + rouleau — échelle sur porte arrière incluse (en option ci-dessous pour la retirer)', notePetit:'Déflecteur + rouleau — pas d\'échelle sur porte arrière sur ce gabarit', noteGrand:'Déflecteur + rouleau + chemin — échelle fixe sur porte arrière incluse', group:'galerie', price:{partner:890, expert:1445, boxer:[1690,1890,2190]} },
     { name:'Galerie ALU haut rebord ajouré', note:'Déflecteur + rouleau — sans échelle sur porte arrière', noteMoyen:'Déflecteur + rouleau — échelle sur porte arrière incluse (en option ci-dessous pour la retirer)', notePetit:'Déflecteur + rouleau — pas d\'échelle sur porte arrière sur ce gabarit', noteGrand:'Déflecteur + rouleau + chemin — échelle fixe sur porte arrière incluse', group:'galerie', price:{partner:1124, expert:1660, boxer:[2040,2150,2497]} },
-    { name:'Porte-charge latérale + 2 barres', note:'Serrage renforcé', group:'galerie', price:{partner:1995, expert:2924, boxer:[3150,3350,3350]} },
+    { name:'Porte-charge latérale + 2 barres', note:'Serrage renforcé', group:'pupitre', price:{partner:1995, expert:2924, boxer:[3150,3350,3350]} },
     { name:'Galerie sans échelle arrière', note:'Retire l\'échelle fixe incluse par défaut sur la galerie (véhicules moyens uniquement)', price:{partner:null, expert:-364, boxer:null} },
     { name:'Option échelle sous galerie', note:null, price:{partner:null, expert:590, boxer:[625,645,645]} },
   ]},
@@ -2500,7 +2504,7 @@ function item_basePrice(item){
 /* Ligne "Annexes UTAC" à 98€, ajoutée automatiquement dès qu'un kit de protection,
    un meuble ou une galerie est sélectionné (une seule fois, quel que soit le nombre
    d'éléments concernés sélectionnés). */
-const UTAC_TRIGGER_GROUPS = ['kitbois','meuble-gauche','meuble-droit','galerie'];
+const UTAC_TRIGGER_GROUPS = ['kitbois','meuble-gauche','meuble-droit','galerie','pupitre'];
 function utacPrice(){ return isLilleAgency ? 90 : 98; }
 const UTAC_LABEL = 'Annexes UTAC suivant transformation et changement de poids du véhicule';
 function utacTriggered(){
