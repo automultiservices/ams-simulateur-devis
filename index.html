@@ -256,6 +256,17 @@
   .line-thumb{ width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0; cursor:zoom-in; border:1px solid var(--grey-line); background:var(--grey-bg); transition:.15s; }
   .line-thumb:hover{ border-color:var(--amber); box-shadow:var(--shadow-md); }
   #photoViewer{ border:none; padding:0; background:transparent; max-width:94vw; max-height:92vh; margin:auto; overflow:visible; }
+  .thumb-pair{ display:flex; gap:4px; flex-shrink:0; }
+  #kitChoice .pv-close{ position:absolute; top:-14px; right:-14px; width:36px; height:36px; border-radius:50%; border:none; background:#fff; color:var(--ink); font-size:18px; font-weight:700; cursor:pointer; box-shadow:var(--shadow-md); }
+  #kitChoice{ margin:auto; border:none; border-radius:14px; padding:22px; max-width:min(720px,94vw); width:100%; overflow:visible; }
+  #kitChoice::backdrop{ background:rgba(20,22,25,.72); }
+  #kitChoice .kc-title{ font-size:17px; font-weight:800; margin-bottom:14px; padding-right:24px; }
+  #kitChoice .kc-opts{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  #kitChoice .kc-opt{ border:2px solid var(--grey-line); border-radius:12px; background:#fff; padding:8px; cursor:pointer; display:flex; flex-direction:column; gap:8px; align-items:center; font:inherit; transition:.15s; }
+  #kitChoice .kc-opt:hover{ border-color:var(--amber); box-shadow:var(--shadow-md); }
+  #kitChoice .kc-opt img{ width:100%; max-height:58vh; aspect-ratio:3/4; object-fit:cover; border-radius:8px; background:var(--grey-bg); }
+  #kitChoice .kc-opt span{ font-weight:800; font-size:15px; }
+  #kitChoice .kc-hint{ text-align:center; color:var(--grey-text); font-size:13px; margin-top:12px; }
   #photoViewer::backdrop{ background:rgba(20,22,25,.82); }
   #photoViewer img{ display:block; max-width:94vw; max-height:84vh; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,.45); background:#fff; }
   #photoViewer .pv-cap{ color:#fff; font-size:14px; font-weight:700; text-align:center; margin-top:12px; }
@@ -601,6 +612,12 @@
 
 <div id="print-area"></div>
 
+<dialog id="kitChoice" onclick="if(event.target===this) this.close()">
+  <button class="pv-close" onclick="document.getElementById('kitChoice').close()" aria-label="Fermer">✕</button>
+  <div class="kc-title" id="kcTitle"></div>
+  <div class="kc-opts" id="kcOpts"></div>
+  <div class="kc-hint">Même prix — cliquez sur le kit souhaité</div>
+</dialog>
 <dialog id="photoViewer" onclick="if(event.target===this) this.close()">
   <button class="pv-close" onclick="document.getElementById('photoViewer').close()" aria-label="Fermer">✕</button>
   <img id="pvImg" src="" alt="">
@@ -2124,7 +2141,35 @@ function noteFor(item){
   if(cat === 'grand' && item.noteGrand) return item.noteGrand;
   if(cat === 'moyen' && item.noteMoyen) return item.noteMoyen;
   if(cat === 'petit' && item.notePetit) return item.notePetit;
-  return item.note;
+  return foamliteText(item, item.note);
+}
+/* ---- Kits de protection : parois bois ou Foamlite (kits bois lisse et bois AD).
+   La variante est stockée dans state.selected[key] ('bois' | 'foamlite'), même prix. ---- */
+function hasWallChoice(it){
+  return !!it && it.group === 'kitbois' && !/premium|eco/i.test(it.name) && /lisse|\bAD\b/i.test(it.name);
+}
+function kitPhotoBase(it){ return it.photo || slugify(it.name); }
+function kitPhotoFoamlite(it){ return kitPhotoBase(it) + '-foamlite'; }
+function foamliteText(it, txt){
+  if(!txt || !it || it.group !== 'kitbois') return txt;
+  if(/premium/i.test(it.name) && /polypro/i.test(txt)) return 'Plancher, passages de roue, parois et portes Foamlite';
+  return txt.replace(/polypro(pyl[eè]ne)?/gi, 'Foamlite');
+}
+function itemLabel(it, key){
+  const v = state.selected[key];
+  if(hasWallChoice(it) && (v === 'bois' || v === 'foamlite')) return it.name + (v === 'foamlite' ? ' — parois Foamlite' : ' — parois bois');
+  return it.name;
+}
+function itemNote(it, key){
+  const n = noteFor(it);
+  if(!hasWallChoice(it)) return n;
+  const v = state.selected[key];
+  if(v === 'foamlite'){
+    const re = /(portes?\s*(\/|,|et)?\s*parois|parois\s*(\/|,|et)?\s*portes?)\s*CP\b/i;
+    return re.test(n || '') ? n.replace(re, 'parois et portes Foamlite') : ((n ? n + ' — ' : '') + 'parois et portes Foamlite');
+  }
+  if(v === 'bois') return n;
+  return (n ? n + ' · ' : '') + 'Parois bois ou Foamlite au choix';
 }
 
 /* =========================================================================
@@ -2461,13 +2506,16 @@ function renderServices(){
       const checked = !!state.selected[key];
       const price = priceFor(it);
       if(price == null) return '';
-      const note = noteFor(it);
+      const note = itemNote(it, key);
       const priceHtml = `${price.toLocaleString('fr-FR')} €`;
-      const thumb = it.photo ? `<img class="line-thumb" loading="lazy" src="${photoUrl(it.photo,true)}" alt="" data-photo="${escAttr(it.photo)}" data-caption="${escAttr(it.name)}" title="Voir la photo" onerror="this.remove()">` : '';
+      const thumbImg = (ph, cap) => `<img class="line-thumb" loading="lazy" src="${photoUrl(ph,true)}" alt="" data-photo="${escAttr(ph)}" data-caption="${escAttr(cap)}" title="Voir la photo" onerror="this.remove()">`;
+      const thumb = hasWallChoice(it)
+        ? `<div class="thumb-pair">${thumbImg(kitPhotoBase(it), it.name + ' — parois bois')}${thumbImg(kitPhotoFoamlite(it), it.name + ' — parois Foamlite')}</div>`
+        : (it.photo ? thumbImg(it.photo, it.name) : '');
       return `<div class="line-item">
         <div class="line-left" data-toggle="${key}">
           <div class="checkbox${checked?' checked':''}">${checked?'<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="white" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>':''}</div>
-          <div><div class="line-name">${it.name}</div>${note?`<div class="line-note">${note}</div>`:''}</div>
+          <div><div class="line-name">${itemLabel(it, key)}</div>${note?`<div class="line-note">${note}</div>`:''}</div>
         </div>
         ${thumb}
         <div class="line-price${checked?' active':''}">${priceHtml}</div>
@@ -2516,6 +2564,7 @@ function toggleItem(key){
   const ci = +ciStr, ii = +iiStr;
   const item = activeServices()[ci].items[ii];
   const turningOn = !state.selected[key];
+  if(turningOn && hasWallChoice(item)){ openKitChoice(key, item); return; }
   if(turningOn && item.group){
     // Exclusivité : décoche tout autre item du même groupe dans la même catégorie
     activeServices()[ci].items.forEach((it2,ii2)=>{
@@ -2524,6 +2573,30 @@ function toggleItem(key){
   }
   state.selected[key] = turningOn;
   renderServices();
+}
+function selectWithVariant(key, variant){
+  const [ci, ii] = key.split('-').map(Number);
+  const item = activeServices()[ci].items[ii];
+  if(item.group) activeServices()[ci].items.forEach((it2,ii2)=>{ if(it2.group === item.group && ii2 !== ii) state.selected[ci+'-'+ii2] = false; });
+  state.selected[key] = variant;
+  renderServices();
+}
+function openKitChoice(key, item){
+  const dlg = document.getElementById('kitChoice');
+  document.getElementById('kcTitle').textContent = item.name + ' — choisissez les parois';
+  const opts = [
+    { v:'bois', label:'Parois bois', ph:kitPhotoBase(item) },
+    { v:'foamlite', label:'Parois Foamlite', ph:kitPhotoFoamlite(item) },
+  ];
+  const box = document.getElementById('kcOpts');
+  box.innerHTML = opts.map(o=>`<button type="button" class="kc-opt" data-v="${o.v}">
+      <img src="${photoUrl(o.ph,false)}" alt="${escAttr(o.label)}">
+      <span>${o.label}</span>
+    </button>`).join('');
+  box.querySelectorAll('.kc-opt').forEach(b=>b.addEventListener('click', ()=>{
+    dlg.close(); selectWithVariant(key, b.dataset.v);
+  }));
+  if(dlg.showModal) dlg.showModal(); else dlg.setAttribute('open','');
 }
 
 /* ---- Nombre de véhicules configurés à l'identique (commandes multiples concession).
@@ -2558,7 +2631,7 @@ function renderSummary(){
   const amountEl = document.getElementById('summaryAmount');
   let total = 0, lines = [];
   activeServices().forEach((c,ci)=>c.items.forEach((it,ii)=>{
-    if(state.selected[ci+'-'+ii]){ const p = priceFor(it); total += p; lines.push({name:it.name, price:p}); }
+    if(state.selected[ci+'-'+ii]){ const p = priceFor(it); total += p; lines.push({name:itemLabel(it, ci+'-'+ii), price:p}); }
   }));
   if(lines.length && utacTriggered()){ total += utacPrice(); lines.push({name:UTAC_LABEL, price:utacPrice()}); }
   linesEl.innerHTML = lines.length ? lines.map(it=>`<div class="summary-line"><span>${it.name}</span><span>${it.price.toLocaleString('fr-FR')} €</span></div>`).join('')
@@ -2595,7 +2668,7 @@ function computeQuoteLines(){
   const pct = concessRemise();
   const lines = [];
   activeServices().forEach((c,ci)=>c.items.forEach((it,ii)=>{
-    if(state.selected[ci+'-'+ii]) lines.push({cat:c.cat, name:it.name, note:noteFor(it), price:priceFor(it), remisable:true});
+    if(state.selected[ci+'-'+ii]) lines.push({cat:c.cat, name:itemLabel(it, ci+'-'+ii), note:itemNote(it, ci+'-'+ii), price:priceFor(it), remisable:true});
   }));
   if(lines.length && utacTriggered()) lines.push({cat:'Annexes', name:UTAC_LABEL, note:null, price:utacPrice(), remisable:REMISE_ON_UTAC});
   let total = 0, totalNet = 0;
