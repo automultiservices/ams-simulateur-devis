@@ -2146,7 +2146,7 @@ function noteFor(item){
 /* ---- Kits de protection : parois bois ou Foamlite (kits bois lisse et bois AD).
    La variante est stockée dans state.selected[key] ('bois' | 'foamlite'), même prix. ---- */
 function hasWallChoice(it){
-  return !!it && it.group === 'kitbois' && !/premium|eco/i.test(it.name) && /lisse|\bAD\b/i.test(it.name);
+  return !!it && it.group === 'kitbois' && !/premium|foamlite|eco/i.test(it.name) && /lisse|\bAD\b|anti.?d[ée]rapant/i.test(it.name);
 }
 function kitPhotoBase(it){ return it.photo || slugify(it.name); }
 function kitPhotoFoamlite(it){ return kitPhotoBase(it) + '-foamlite'; }
@@ -2169,7 +2169,7 @@ function itemNote(it, key){
     return re.test(n || '') ? n.replace(re, 'parois et portes Foamlite') : ((n ? n + ' — ' : '') + 'parois et portes Foamlite');
   }
   if(v === 'bois') return n;
-  return (n ? n + ' · ' : '') + 'Parois bois ou Foamlite au choix';
+  return n;
 }
 
 /* =========================================================================
