@@ -266,6 +266,16 @@
   #kitChoice .kc-opt:hover{ border-color:var(--amber); box-shadow:var(--shadow-md); }
   #kitChoice .kc-opt img{ width:100%; max-height:58vh; aspect-ratio:3/4; object-fit:cover; border-radius:8px; background:var(--grey-bg); }
   #kitChoice .kc-opt span{ font-weight:800; font-size:15px; }
+  #kitChoice .kc-title{ font-size:14px; font-weight:700; color:var(--grey-text); margin-bottom:4px; }
+  #kitChoice .kc-q{ font-size:20px; font-weight:800; margin-bottom:14px; padding-right:24px; }
+  #kitChoice .kc-opt span.kc-lbl{ font-size:20px; letter-spacing:.06em; }
+  #kitChoice .kc-opt span.kc-cta{ width:100%; text-align:center; background:var(--amber); color:#231604; border-radius:8px; padding:10px; font-size:15px; }
+  .wall-pick{ display:flex; align-items:center; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .wall-pick .wall-q{ font-size:12px; font-weight:800; }
+  .wall-pick.todo .wall-q{ color:#B45309; }
+  .wall-btn{ font:inherit; font-size:13px; font-weight:800; padding:6px 14px; border-radius:999px; border:2px solid var(--grey-line); background:#fff; color:var(--ink); cursor:pointer; }
+  .wall-btn:hover{ border-color:var(--amber); }
+  .wall-btn.on{ background:var(--amber); border-color:var(--amber); color:#231604; }
   #kitChoice .kc-hint{ text-align:center; color:var(--grey-text); font-size:13px; margin-top:12px; }
   #photoViewer::backdrop{ background:rgba(20,22,25,.82); }
   #photoViewer img{ display:block; max-width:94vw; max-height:84vh; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,.45); background:#fff; }
@@ -452,7 +462,7 @@
   <div class="shell">
 
     <div class="view show" id="view-marque">
-      <div class="page-head"><h1>Quelle est la marque de votre véhicule ?</h1><p>Sélectionnez votre constructeur pour commencer votre devis.</p></div>
+      <div class="page-head"><h1>Quelle est la marque de votre véhicule ?</h1></div>
       <div class="brand-grid" id="brandGrid"></div>
     </div>
 
@@ -466,7 +476,7 @@
 
     <div class="view" id="view-dimensions">
       <button class="back-link" onclick="goTo('modele')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Changer de modèle</button>
-      <div class="page-head"><h1>Précisez la configuration</h1><p>Seules les options réellement disponibles pour ce modèle sont proposées.</p></div>
+      <div class="page-head"><h1>Précisez la configuration</h1></div>
       <div class="config-panel">
         <div class="config-panel-head">
           <img id="dimBrandLogo" src="" alt="">
@@ -474,9 +484,8 @@
         </div>
         <div class="config-groups" id="configGroups"></div>
         <div class="config-group" style="margin-top:26px; max-width:640px;">
-          <h4>Options complémentaires sur ce véhicule <span style="text-transform:none; font-weight:400; color:var(--grey-text);">(facultatif)</span></h4>
+          <h4>Autres options du véhicule <span style="text-transform:none; font-weight:400; color:var(--grey-text);">(facultatif)</span></h4>
           <textarea id="optionsLibres" placeholder="Ex : portes arrière vitrées, roue de secours intérieure, convertisseur 12V/230V, cloison vitrée..." style="width:100%; min-height:70px; padding:12px 14px; border:1.5px solid var(--grey-line); border-radius:9px; font-size:13.5px; font-family:inherit; resize:vertical;" oninput="state.dims.optionsLibres = this.value; updateDimPreview();"></textarea>
-          <div class="config-note">Précisez ici toute option présente sur ce véhicule qui n'est pas déjà listée ci-dessus.</div>
           <label class="no-options-check" id="noOptionsWrap"><input type="checkbox" id="noOptions" onchange="state.noOptions=this.checked; updateDimPreview();"><span>Ce véhicule n'a <b>aucune</b> option complémentaire</span></label>
         </div>
         <div class="dim-preview" id="dimPreview">Configuration sélectionnée : <b id="dimPreviewText">—</b></div>
@@ -491,7 +500,7 @@
 
     <div class="view" id="view-devis">
       <button class="back-link" id="devisBackLink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Modifier la configuration</button>
-      <div class="page-head"><h1>Composez votre devis</h1><p>Cochez les prestations souhaitées. Le total se met à jour automatiquement.</p></div>
+      <div class="page-head"><h1>Composez votre devis</h1><p>Cochez les prestations souhaitées.</p></div>
       <div class="veh-recap">
         <div class="veh-recap-left">
           <img id="devisBrandLogo" src="" alt="">
@@ -499,14 +508,14 @@
         </div>
         <div class="veh-recap-edit" onclick="goTo('marque')">Changer de véhicule</div>
       </div>
-      <div class="pose-badge">✓ Tous les prix affichés incluent la pose</div>
+      <div class="pose-badge">✓ Pose incluse</div>
       <div class="devis-layout">
         <div class="cat-list" id="catList"></div>
         <div class="summary">
           <h3>Votre devis</h3>
           <div id="summaryLines"></div>
           <div class="summary-total"><div class="label">Total estimé HT</div><div class="amount" id="summaryAmount">0 €</div></div>
-          <div class="summary-ht">Pose incluse — devis indicatif</div>
+          <div class="summary-ht">Devis indicatif</div>
           <div class="qty-slot" id="qtyBoxDevis"></div>
           <button class="summary-cta" id="toContactBtn" onclick="goTo('contact')" disabled>Continuer →</button>
         </div>
@@ -520,7 +529,7 @@
 
     <div class="view" id="view-contact">
       <button class="back-link" onclick="goTo('devis')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>Modifier les prestations</button>
-      <div class="page-head"><h1>Vos coordonnées</h1><p>Vérifiez le récapitulatif ci-contre, puis générez le devis ou transmettez la commande.</p></div>
+      <div class="page-head"><h1>Vos coordonnées</h1></div>
       <div class="contact-layout">
         <div class="contact-panel">
           <div class="contact-grid">
@@ -532,11 +541,11 @@
             <div class="contact-field"><label>Email <span class="req">*</span></label><input id="cEmail" type="email"></div>
             <div class="contact-field"><label>Téléphone</label><input id="cTel" type="tel"></div>
           </div>
-          <label class="contact-check"><input type="checkbox" id="cConsent"><span>J'accepte que mes données soient utilisées par Auto Multi Services pour traiter ma demande de devis, conformément à la politique de confidentialité.</span></label>
-          <label class="contact-check"><input type="checkbox" id="cSignature" onchange="togglePickupBox()"><span>Je certifie l'exactitude des informations et du véhicule renseignés ci-contre et j'appose ma signature électronique — <b>obligatoire uniquement pour transmettre une commande ferme</b>.</span></label>
+          <label class="contact-check"><input type="checkbox" id="cConsent"><span>J'accepte qu'AMS utilise mes données pour traiter ma demande.</span></label>
+          <label class="contact-check"><input type="checkbox" id="cSignature" onchange="togglePickupBox()"><span>Je certifie les informations et signe électroniquement — <b>uniquement pour une commande</b>.</span></label>
           <div class="pickup-box" id="pickupBox" hidden>
             <div class="pickup-title">Quand AMS peut venir chercher le véhicule ? <span class="req">*</span></div>
-            <p class="pickup-help">Date à partir de laquelle le véhicule est disponible pour qu'AMS vienne l'enlever et commence les travaux — <b>il ne s'agit pas de la date de livraison au client</b>.</p>
+            <p class="pickup-help">Date d'enlèvement par AMS — <b>pas la date de livraison client</b>.</p>
             <div class="pickup-row">
               <input id="cDispoDate" type="date">
               <label class="contact-check" style="margin-top:0;"><input type="checkbox" id="cDispoNow" onchange="toggleDispoNow()"><span>Déjà disponible, AMS peut venir dès maintenant</span></label>
@@ -557,8 +566,8 @@
             </button>
           </div>
           <p style="font-size:11.5px; color:var(--grey-text); margin-top:10px; line-height:1.6;">
-            <b>Sans engagement</b> — pour présenter les prix à votre client et en discuter, sans nous transmettre la commande.<br>
-            <b>Commande</b> — devis signé, transmis à AMS pour lancer la préparation.
+            <b>Sans engagement</b> — pour présenter les prix à votre client.<br>
+            <b>Commande</b> — transmise à AMS pour lancer les travaux.
           </p>
         </div>
         <div class="contact-recap">
@@ -571,7 +580,7 @@
           <h3>Votre devis</h3>
           <div id="cRecapLines"></div>
           <div class="summary-total"><div class="label">Total estimé HT</div><div class="amount" id="cRecapAmount">0 €</div></div>
-          <div class="summary-ht">Pose incluse — devis indicatif</div>
+          <div class="summary-ht">Devis indicatif</div>
           <div class="qty-slot" id="qtyBoxContact"></div>
         </div>
       </div>
@@ -595,14 +604,13 @@
               <button class="btn-secondary" style="justify-content:center;" onclick="printQuote('concession')">Version concession seule</button>
               <button class="btn-secondary" style="justify-content:center;" onclick="printQuote('client')">Version client seule</button>
             </div>
-            <div style="font-size:12px; color:#667080;">« Les 2 devis » ouvre la fenêtre d'impression deux fois : d'abord la version concession, puis la version client.</div>
           </div>
           <button class="btn-secondary" id="sendBtn" style="justify-content:center; display:flex; align-items:center; gap:8px;" onclick="sendQuoteEmail()">✉️ Envoyer à notre équipe (comams@automultiservices.com)</button>
         </div>
         <div class="final-steps">
-          <div class="final-step"><span class="final-step-num">1</span><span>Cliquez sur « Enregistrer en PDF » et choisissez « Enregistrer au format PDF » dans la fenêtre d'impression.</span></div>
-          <div class="final-step"><span class="final-step-num">2</span><span>Cliquez sur « Envoyer à notre équipe » : votre messagerie s'ouvre avec le destinataire et le message pré-remplis.</span></div>
-          <div class="final-step"><span class="final-step-num">3</span><span>Glissez le PDF que vous venez d'enregistrer dans le mail, puis envoyez.</span></div>
+          <div class="final-step"><span class="final-step-num">1</span><span>Enregistrez le PDF</span></div>
+          <div class="final-step"><span class="final-step-num">2</span><span>Cliquez sur « Envoyer à notre équipe »</span></div>
+          <div class="final-step"><span class="final-step-num">3</span><span>Joignez le PDF au mail et envoyez</span></div>
         </div>
       </div>
     </div>
@@ -615,8 +623,9 @@
 <dialog id="kitChoice" onclick="if(event.target===this) this.close()">
   <button class="pv-close" onclick="document.getElementById('kitChoice').close()" aria-label="Fermer">✕</button>
   <div class="kc-title" id="kcTitle"></div>
+  <div class="kc-q">Choisissez vos parois : <b>Bois</b> ou <b>Foamlite</b></div>
   <div class="kc-opts" id="kcOpts"></div>
-  <div class="kc-hint">Même prix — cliquez sur le kit souhaité</div>
+  <div class="kc-hint">Même prix</div>
 </dialog>
 <dialog id="photoViewer" onclick="if(event.target===this) this.close()">
   <button class="pv-close" onclick="document.getElementById('photoViewer').close()" aria-label="Fermer">✕</button>
@@ -2515,7 +2524,7 @@ function renderServices(){
       return `<div class="line-item">
         <div class="line-left" data-toggle="${key}">
           <div class="checkbox${checked?' checked':''}">${checked?'<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="white" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>':''}</div>
-          <div><div class="line-name">${itemLabel(it, key)}</div>${note?`<div class="line-note">${note}</div>`:''}</div>
+          <div><div class="line-name">${itemLabel(it, key)}</div>${note?`<div class="line-note">${note}</div>`:''}${hasWallChoice(it)?`<div class="wall-pick${checked?'':' todo'}"><span class="wall-q">Parois :</span>${['bois','foamlite'].map(v=>`<button type="button" class="wall-btn${state.selected[key]===v?' on':''}" data-wall="${key}" data-v="${v}">${v==='bois'?'Bois':'Foamlite'}</button>`).join('')}</div>`:''}</div>
         </div>
         ${thumb}
         <div class="line-price${checked?' active':''}">${priceHtml}</div>
@@ -2534,6 +2543,12 @@ function renderServices(){
   }).join('');
   list.querySelectorAll('[data-togglecat]').forEach(el=>el.addEventListener('click', ()=>toggleCat(+el.dataset.togglecat)));
   list.querySelectorAll('[data-toggle]').forEach(el=>el.addEventListener('click', ()=>toggleItem(el.dataset.toggle)));
+  list.querySelectorAll('.wall-btn').forEach(b=>b.addEventListener('click', e=>{
+    e.stopPropagation();
+    const k = b.dataset.wall;
+    if(state.selected[k] === b.dataset.v){ state.selected[k] = false; renderServices(); }
+    else selectWithVariant(k, b.dataset.v);
+  }));
   list.querySelectorAll('.line-thumb').forEach(el=>{
     el.addEventListener('pointerenter', ()=>preloadPhoto(el.dataset.photo));
     el.addEventListener('touchstart', ()=>preloadPhoto(el.dataset.photo), {passive:true});
@@ -2554,7 +2569,7 @@ function item_basePrice(item){
    d'éléments concernés sélectionnés). */
 const UTAC_TRIGGER_GROUPS = ['kitbois','meuble-gauche','meuble-droit','galerie','pupitre'];
 function utacPrice(){ return isLilleAgency ? 90 : 98; }
-const UTAC_LABEL = 'Annexes UTAC suivant transformation et changement de poids du véhicule';
+const UTAC_LABEL = 'Annexes UTAC';
 function utacTriggered(){
   return activeServices().some((c,ci)=>c.items.some((it,ii)=>state.selected[ci+'-'+ii] && UTAC_TRIGGER_GROUPS.includes(it.group)));
 }
@@ -2583,15 +2598,16 @@ function selectWithVariant(key, variant){
 }
 function openKitChoice(key, item){
   const dlg = document.getElementById('kitChoice');
-  document.getElementById('kcTitle').textContent = item.name + ' — choisissez les parois';
+  document.getElementById('kcTitle').textContent = item.name;
   const opts = [
-    { v:'bois', label:'Parois bois', ph:kitPhotoBase(item) },
-    { v:'foamlite', label:'Parois Foamlite', ph:kitPhotoFoamlite(item) },
+    { v:'bois', label:'BOIS', ph:kitPhotoBase(item) },
+    { v:'foamlite', label:'FOAMLITE', ph:kitPhotoFoamlite(item) },
   ];
   const box = document.getElementById('kcOpts');
   box.innerHTML = opts.map(o=>`<button type="button" class="kc-opt" data-v="${o.v}">
       <img src="${photoUrl(o.ph,false)}" alt="${escAttr(o.label)}">
-      <span>${o.label}</span>
+      <span class="kc-lbl">${o.label}</span>
+      <span class="kc-cta">Choisir</span>
     </button>`).join('');
   box.querySelectorAll('.kc-opt').forEach(b=>b.addEventListener('click', ()=>{
     dlg.close(); selectWithVariant(key, b.dataset.v);
@@ -2692,8 +2708,8 @@ function renderPriceModeUI(){
   box.querySelectorAll('.pricemode-opt').forEach(b=>b.classList.toggle('selected', b.dataset.pm === state.priceMode));
   const help = document.getElementById('pmHelp');
   help.textContent = !state.priceMode ? 'Choisissez le type de devis avant de le générer.'
-    : state.priceMode === 'concession' ? 'Version concession : le détail des prix nets figure uniquement sur le PDF.'
-    : 'Version client : prix publics.';
+    : state.priceMode === 'concession' ? 'Prix nets détaillés sur le PDF.'
+    : '';
 }
 
 /* ---- étape 6 : génération + envoi du devis ---- */
@@ -2790,11 +2806,11 @@ function renderFinal(mode){
   document.getElementById('printConcessionBtns').style.display = isConc ? 'flex' : 'none';
   if(mode === 'commande'){
     title.textContent = 'Votre commande est prête';
-    sub.textContent = "Devis signé électroniquement — enregistrez le PDF puis transmettez-le à notre équipe pour lancer la préparation.";
+    sub.textContent = "Commande signée — enregistrez le PDF et envoyez-le à AMS.";
     sendBtn.innerHTML = `✉️ Transmettre la commande à notre équipe (${recipient.to})`;
   } else {
     title.textContent = 'Votre devis est prêt';
-    sub.textContent = "Devis sans engagement — enregistrez-le en PDF pour votre client. Vous pouvez aussi nous l'envoyer (facultatif).";
+    sub.textContent = "Devis sans engagement — enregistrez-le en PDF.";
     sendBtn.innerHTML = '✉️ Envoyer le devis à notre équipe (facultatif)';
   }
 }
